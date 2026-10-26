@@ -2,6 +2,7 @@
 // Fixture tests for template/.claude/hooks/*.mjs. Each case builds a throwaway repo (template/ copied,
 // git initialised, a story branch with owns), pipes a PreToolUse JSON into the real hook, and asserts
 // on exit code, stderr/stdout and duration. Run from the loops repo root: `node test/hooks.mjs`.
+import './git-env.mjs';
 import { cpSync, mkdirSync, mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';

@@ -79,9 +79,9 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 
 | ID | Behavior | Proof | Status |
 | --- | --- | --- | --- |
-| T-ISO-1 | this repo's .githooks/pre-push, run by git push from a linked worktree, leaves the main repo's refs and config unchanged; the same hook without its env-clearing line changes them | `unit` | ☐ → ST-018 |
-| T-ISO-2 | test/git-env.mjs removes every variable git rev-parse --local-env-vars lists, so a git init and git config in a temp dir started with GIT_DIR pointing at a sentinel repo leave the sentinel unchanged | `unit` | ☐ → ST-018 |
-| T-ISO-3 | test/run.mjs, test/hooks.mjs and test/release.mjs import test/git-env.mjs before any other import | `unit` | ☐ → ST-018 |
+| T-ISO-1 | this repo's .githooks/pre-push, run by git push from a linked worktree, leaves the main repo's refs and config unchanged; the same hook without its env-clearing line changes them | `unit` | ✅ |
+| T-ISO-2 | test/git-env.mjs removes every variable git rev-parse --local-env-vars lists, so a git init and git config in a temp dir started with GIT_DIR pointing at a sentinel repo leave the sentinel unchanged | `unit` | ✅ |
+| T-ISO-3 | test/run.mjs, test/hooks.mjs and test/release.mjs import test/git-env.mjs before any other import | `unit` | ✅ |
 
 ### PAR
 

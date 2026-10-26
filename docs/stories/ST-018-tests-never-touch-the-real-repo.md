@@ -3,16 +3,16 @@ id: ST-018
 title: Fixture tests never write to the real repo, even when pre-push runs from a linked worktree
 trace: AGENTS.md "Common commands" (pre-push runs the full set) · incident 2026-10-26 during /loops:start ST-015
 class: normal
-status: ready
+status: done
 depends_on: []
 consumes: []
 owns: [.githooks/pre-push, test/git-env.mjs, test/run.mjs, test/hooks.mjs, test/release.mjs, LESSONS.md]
 opens: []
 adrs: [ADR-0002]
 proof:
-  - T-ISO-1 | unit | this repo's .githooks/pre-push, run by git push from a linked worktree, leaves the main repo's refs and config unchanged; the same hook without its env-clearing line changes them | ☐
-  - T-ISO-2 | unit | test/git-env.mjs removes every variable git rev-parse --local-env-vars lists, so a git init and git config in a temp dir started with GIT_DIR pointing at a sentinel repo leave the sentinel unchanged | ☐
-  - T-ISO-3 | unit | test/run.mjs, test/hooks.mjs and test/release.mjs import test/git-env.mjs before any other import | ☐
+  - T-ISO-1 | unit | this repo's .githooks/pre-push, run by git push from a linked worktree, leaves the main repo's refs and config unchanged; the same hook without its env-clearing line changes them | ✅
+  - T-ISO-2 | unit | test/git-env.mjs removes every variable git rev-parse --local-env-vars lists, so a git init and git config in a temp dir started with GIT_DIR pointing at a sentinel repo leave the sentinel unchanged | ✅
+  - T-ISO-3 | unit | test/run.mjs, test/hooks.mjs and test/release.mjs import test/git-env.mjs before any other import | ✅
 ---
 
 # Story Packet: ST-018 — Fixture tests never write to the real repo
@@ -39,6 +39,6 @@ ADR-0002: the pre-push hook is how this repo runs its own shipped checks on itse
 
 ## Story-closing checklist
 
-- [ ] T-ISO-1's negative control fails without the fix (say so in the PR).
-- [ ] A real `git push` of the story branch from `.worktrees/st-018` passes the hook and leaves `main`, `.git/config` and `git worktree list` unchanged.
-- [ ] All `proof` rows ✅; `node scripts/loops-gen.mjs`; `node scripts/loops-check.mjs` OK; full pre-push set green.
+- [x] T-ISO-1's negative control fails without the fix (say so in the PR).
+- [x] A real `git push` of the story branch from `.worktrees/st-018` passes the hook and leaves `main`, `.git/config` and `git worktree list` unchanged.
+- [x] All `proof` rows ✅; `node scripts/loops-gen.mjs`; `node scripts/loops-check.mjs` OK; full pre-push set green.
