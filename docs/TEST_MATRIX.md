@@ -25,6 +25,7 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-CI-1 | node evals/check.mjs passes a result whose text contains every expected string and is_error is false, and fails otherwise, without jq | `unit` | ✅ |
 | T-CI-2 | evals/skills/*.json holds one eval per shipped skill with three phrasings each (one Vietnamese), and evals/run.sh runs them with claude --bare -p and records pass rate and total cost to evals/last-run.md (smoke run 2026-10-06: 1 phrasing of next through --plugin-dir, PASS, 1.55 USD; the full 33-phrasing suite was not run) | `manual` | ✅ |
 | T-CI-3 | template/ci/github-loops.yml and template/ci/gitlab-ci.yml call loops-gen --check and loops-check on every push, and the evals on changes under .claude/** and skills; neither has continue-on-error | `manual` | ✅ |
+| T-CI-4 | evals/last-run.md records a run of every evals/skills/*.json phrasing, with mode, date, pass count and cost per phrasing | `unit` | ☐ → ST-017 |
 
 ### CORE
 
@@ -65,13 +66,14 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | ID | Behavior | Proof | Status |
 | --- | --- | --- | --- |
 | T-HOOK-1 | owns-guard denies an Edit outside the active story's owns and allows one inside, reading the story from the hook's cwd | `unit` | ✅ |
-| T-HOOK-2 | stage-guard exits 2 for git add -A, git add ., git commit -a and allows git add <path> | `unit` | ✅ |
+| T-HOOK-2 | stage-guard denies (JSON permissionDecision, exit 0) git add -A, git add ., git commit -a and allows git add <path> | `unit` | ✅ |
 | T-HOOK-3 | generated-guard denies an Edit whose old_string falls inside a LOOPS:GEN block and allows one outside it | `unit` | ✅ |
 | T-HOOK-4 | adr-guard denies an Edit to an ADR whose Status is Accepted and allows a Write of a new ADR file | `unit` | ✅ |
 | T-HOOK-5 | fix-guard denies an Edit to a test file when LOOPS_FIX_TASK=1 and allows it otherwise | `unit` | ✅ |
 | T-HOOK-6 | Every hook answers an empty or malformed stdin with exit 0 (never blocks on its own failure) and runs under 300 ms including node start-up (measured by the fixture) | `unit` | ✅ |
 | T-HOOK-7 | owns-guard on branch story/ST-019 allows a Write of a new docs/decisions/ADR-0003-x.md and an Edit of docs/decisions/OPEN.md, and blocks an Edit of the existing Proposed docs/decisions/ADR-0002-x.md | `unit` | ✅ |
 | T-HOOK-8 | adr-guard allows an Edit whose old_string is the "Enforced by" line of an Accepted ADR and still blocks a body edit | `unit` | ✅ |
+| T-HOOK-9 | stage-guard allows git add -A on main and outside any repo, and blocks it on a story/ST-xxx branch | `unit` | ☐ → ST-016 |
 
 ### PAR
 
@@ -104,6 +106,7 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-SKL-10 | docs/templates/improvement.md has the fields representative job · baseline · earliest gap (one of six kinds) · owner · hypothesis "If X at Y then a fresh agent will Z because M" · evidence that would weaken it · maintenance owner and removal condition · fresh rerun · verdict; /loops:improve writes docs/reviews/YYYY-MM-DD-improve-<slug>.md from it and adds the LESSONS entry only on Keep | `manual` | ✅ |
 | T-SKL-11 | skills/init/SKILL.md names one English template, no Vietnamese canonical tree and no mirror | `manual` | ✅ |
 | T-SKL-12 | skills/init/SKILL.md Step 3 rewrites "This repo's foundation checklist" in docs/LOOP.md from the SAD and the ADRs it generated, one seam per line with its ADR, and Step 4 checks that none of the shipped example lines is left | `manual` | ✅ |
+| T-SKL-13 | skills/start/SKILL.md says the claim is visible to other clones once the start commit is pushed, not when the empty branch is pushed | `manual` | ☐ → ST-016 |
 
 ### UPD
 
@@ -115,6 +118,11 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-UPD-4 | apply with overlapping edits exits 2, writes nothing to the live file, stages base/local/incoming/resolved under .loops/update/; --continue refuses while markers remain and applies once resolved; --abort removes the staging dir | `unit` | ✅ |
 | T-UPD-5 | a mixed file gets only its LOOPS:BEGIN/END block merged and the bytes outside the markers are byte-identical afterwards; a seeded file is never read or written | `unit` | ✅ |
 | T-UPD-6 | a path listed in manifest.frozen is skipped by apply and not reported by status; loops-check notes a managed file whose sha differs from its base and a manifest version that differs from LOOPS_VERSION | `unit` | ✅ |
+| T-UPD-9 | a mixed file with two blocks changed upstream, one conflicting locally, stages the conflicting block and carries the clean one; after --continue both upstream changes are in the file | `unit` | ☐ → ST-015 |
+| T-UPD-10 | a managed file with no stored base whose local text differs from upstream is staged as a conflict, never reported unchanged | `unit` | ☐ → ST-015 |
+| T-UPD-11 | init on a repo whose files already exist records a base only for files byte-equal to the template; the next apply stages every other differing file | `unit` | ☐ → ST-015 |
+| T-UPD-12 | every file listed as mixed in loops-install-files.txt has at least one LOOPS:BEGIN block in template/ | `unit` | ☐ → ST-015 |
+| T-UPD-13 | apply with no managed file to touch succeeds while an unrelated file is dirty | `unit` | ☐ → ST-015 |
 <!-- LOOPS:GEN-END test-matrix -->
 
 ## Behaviors without an owning story
@@ -124,4 +132,3 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 
 | ID      | Behavior             | Proof  | Status |
 | ------- | -------------------- | ------ | ------ |
-| T-XXX-0 | `node test/run.mjs` builds a repo from template/ and every case passes | `unit` | ☐      |

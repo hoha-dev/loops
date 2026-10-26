@@ -11,7 +11,7 @@ opens: []
 adrs: [ADR-0004]
 proof:
   - T-HOOK-1 | unit | owns-guard denies an Edit outside the active story's owns and allows one inside, reading the story from the hook's cwd | ✅
-  - T-HOOK-2 | unit | stage-guard exits 2 for git add -A, git add ., git commit -a and allows git add <path> | ✅
+  - T-HOOK-2 | unit | stage-guard denies (JSON permissionDecision, exit 0) git add -A, git add ., git commit -a and allows git add <path> | ✅
   - T-HOOK-3 | unit | generated-guard denies an Edit whose old_string falls inside a LOOPS:GEN block and allows one outside it | ✅
   - T-HOOK-4 | unit | adr-guard denies an Edit to an ADR whose Status is Accepted and allows a Write of a new ADR file | ✅
   - T-HOOK-5 | unit | fix-guard denies an Edit to a test file when LOOPS_FIX_TASK=1 and allows it otherwise | ✅
