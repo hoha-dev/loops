@@ -1,5 +1,5 @@
 {
-  "version": "0.2.5",
+  "version": "0.2.6",
   "installed": "2026-10-26",
   "frozen": [
     "scripts/loops-check.mjs",
@@ -51,7 +51,7 @@
     },
     "scripts/loops-update.mjs": {
       "kind": "managed",
-      "sha256": "62948a03995a0334a7beb5e70cef45bec7914e04cd776ba8d89a0e0d41f1ef58"
+      "sha256": "0b172751b2841f5403dfef607ee8a5b11ec45f741e3112bd632a7d3b3ac806ac"
     },
     ".claude/settings.json": {
       "kind": "managed",
@@ -99,7 +99,7 @@
     },
     "REVIEW.md": {
       "kind": "mixed",
-      "sha256": "6e4299ba36955d5b00a2d69bfd0f8cf6de8181cc624ea7d6cf8e37c51c632317"
+      "sha256": "64a15640876ec30333d55bbdce4b831c2631d2e92f052d044bc07e493729b037"
     },
     "AGENTS.md": {
       "kind": "mixed",

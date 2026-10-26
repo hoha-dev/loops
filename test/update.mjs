@@ -2,6 +2,7 @@
 // Fixture tests for template/scripts/loops-update.mjs (ADR-0005). Each case builds a consuming repo from
 // template/ and a fake "plugin checkout" whose template was edited to play the upstream, then runs the
 // real script. Run from the loops repo root: `node test/update.mjs` (add a case name to run one).
+import './git-env.mjs';
 import { cpSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -156,6 +157,74 @@ test('T-UPD-6 frozen path skipped; loops-check notes drift and a version mismatc
   const c = check(d);
   expect(/managed file\(s\) differ from the installed base: docs\/templates\/runbook\.md/.test(c.out), 'expected a drift note from loops-check', c.out);
   expect(/LOOPS_VERSION 0\.1\.0 in docs\/LOOP\.md but \.loops\/manifest\.json says 0\.2\.0/.test(c.out), 'expected a version mismatch note', c.out);
+});
+
+// The body of one LOOPS block of a mixed file.
+const blockBody = (t, name) => t.match(new RegExp(`<!-- LOOPS:BEGIN ${name}[^>]*-->\\n([\\s\\S]*?)<!-- LOOPS:END ${name} -->`))[1];
+const firstLongLine = (body) => body.split('\n').find((l) => l.trim().length > 20);
+
+test('T-UPD-9 mixed file, two blocks changed upstream, one conflicting: both staged or carried; after --continue both upstream changes are in', () => {
+  const p1 = plugin('p9a', '0.1.0'); const d = repo('r9', p1);
+  const t = rd(join(d, MIXED));
+  const coreLine = firstLongLine(blockBody(t, 'core')); const ritLine = firstLongLine(blockBody(t, 'rituals'));
+  wr(join(d, MIXED), t.replace(coreLine, `${coreLine} LOCAL-CORE`)); git(d, 'add', '-A'); git(d, 'commit', '-q', '-m', 'local');
+  const p2 = plugin('p9b', '0.2.0');
+  wr(join(p2, 'template', MIXED), rd(join(p2, 'template', MIXED)).replace(coreLine, `${coreLine} UPSTREAM-CORE`).replace(ritLine, `${ritLine} UPSTREAM-RITUALS`));
+  const r = sh(d, ['apply', '--plugin', p2]);
+  expect(r.code === 2 && /block "core"/.test(r.out), 'expected the core block staged as a conflict', r.out);
+  const res = join(d, '.loops/update/resolved', `${MIXED}#core`);
+  wr(res, rd(res).replace(/^<{7}.*\n[\s\S]*?^={7}.*\n/m, '').replace(/^>{7}.*\n/m, ''));
+  const c = sh(d, ['--continue']);
+  const after = rd(join(d, MIXED));
+  expect(c.code === 0 && /UPSTREAM-CORE/.test(after), 'expected the resolved core block applied', c.out);
+  expect(/UPSTREAM-RITUALS/.test(after), 'expected the clean rituals change applied too', after.slice(0, 200));
+  git(d, 'add', '-A'); git(d, 'commit', '-q', '-m', 'updated');
+  const again = sh(d, ['apply', '--plugin', p2]);
+  expect(again.code === 0 && !/update\s+docs\/LOOP\.md/.test(again.out), 'expected nothing left to do', again.out);
+});
+
+test('T-UPD-10 a managed file with no stored base that differs from upstream is a conflict, never unchanged', () => {
+  const p1 = plugin('p10a', '0.1.0'); const d = repo('r10', p1);
+  rmSync(join(d, '.loops/base', MANAGED)); git(d, 'add', '-A'); git(d, 'commit', '-q', '-m', 'lose base');
+  const p2 = plugin('p10b', '0.2.0'); wr(join(p2, 'template', MANAGED), `${rd(join(p2, 'template', MANAGED))}\nUPSTREAM-LINE\n`);
+  const r = sh(d, ['apply', '--plugin', p2]);
+  expect(r.code === 2 && /conflict\s+docs\/templates\/runbook\.md\s+— no stored base/.test(r.out), 'expected the base-less file staged as a conflict', r.out);
+  expect(!/UPSTREAM-LINE/.test(rd(join(d, MANAGED))), 'expected the live file untouched');
+});
+
+test('T-UPD-11 init over existing files records a base only for files equal to the template; apply then stages every other differing file', () => {
+  const p1 = plugin('p11a', '0.1.0');
+  const d = join(WORK, 'r11'); cpSync(join(p1, 'template'), d, { recursive: true });
+  const G = 'docs/templates/review.md';
+  wr(join(d, G), `${rd(join(d, G))}\nREPO-EDIT\n`);
+  git(d, 'init', '-q', '-b', 'main'); git(d, 'config', 'user.email', 't@x'); git(d, 'config', 'user.name', 't'); git(d, 'config', 'core.autocrlf', 'false');
+  git(d, 'add', '-A'); git(d, 'commit', '-q', '-m', 'installed before v0.2');
+  const p2 = plugin('p11b', '0.2.0');
+  wr(join(p2, 'template', MANAGED), `${rd(join(p2, 'template', MANAGED))}\nUPSTREAM-RUNBOOK\n`);
+  wr(join(p2, 'template', G), `${rd(join(p2, 'template', G))}\nUPSTREAM-REVIEW\n`);
+  expect(sh(d, ['init', '--plugin', p2]).code === 0, 'expected init to succeed');
+  expect(!existsSync(join(d, '.loops/base', MANAGED)) && !existsSync(join(d, '.loops/base', G)), 'expected no base for files that differ from the template');
+  expect(existsSync(join(d, '.loops/base/docs/templates/spec.md')), 'expected a base for a file equal to the template');
+  const s0 = sh(d, ['status', '--plugin', p2]);
+  expect(/2 file\(s\) without a base — run apply/.test(s0.out) && !/→ current/.test(s0.out), 'expected status not to say current before the base-less files are merged', s0.out);
+  git(d, 'add', '-A'); git(d, 'commit', '-q', '-m', 'base');
+  const r = sh(d, ['apply', '--plugin', p2]);
+  expect(r.code === 2 && /conflict\s+docs\/templates\/runbook\.md/.test(r.out) && /conflict\s+docs\/templates\/review\.md/.test(r.out), 'expected both differing files staged', r.out);
+  expect(/pending update staged/.test(sh(d, ['status', '--plugin', p2]).out), 'expected status to name the pending staging');
+});
+
+test('T-UPD-12 every file listed as mixed has at least one LOOPS:BEGIN block in template/', () => {
+  const mixed = rd(join(ROOT, 'loops-install-files.txt')).split('\n').map((l) => l.match(/^mixed\s+(\S+)/)?.[1]).filter(Boolean);
+  const bare = mixed.filter((p) => !/<!-- LOOPS:BEGIN [\w-]+/.test(rd(join(ROOT, 'template', p))));
+  expect(mixed.length > 0 && bare.length === 0, `expected a LOOPS block in every mixed file; none in: ${bare.join(', ')}`);
+});
+
+test('T-UPD-13 apply with no managed file to touch succeeds while an unrelated file is dirty', () => {
+  const p1 = plugin('p13a', '0.1.0'); const d = repo('r13', p1);
+  wr(join(d, 'unrelated.txt'), 'work in progress\n');
+  const p2 = plugin('p13b', '0.2.0');
+  const r = sh(d, ['apply', '--plugin', p2]);
+  expect(r.code === 0 && !/uncommitted changes/.test(r.out), 'expected apply to ignore a dirty file it does not touch', r.out);
 });
 
 const only = process.argv[2];

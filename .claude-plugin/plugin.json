@@ -2,7 +2,7 @@
   "name": "loops",
   "displayName": "loops",
   "description": "The AI-native SDLC loop as a repo template + Claude Code skills: intent → spec → story packets with machine-checked Ready/Done → parallel sessions and developers with owns-based isolation and pushed claims → hooks that enforce the boundaries → review → the loop restarts from what production reports. Skills: /loops:intent, spec, sync, next, wave, start, land, review, encode, init, update, improve.",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "author": {
     "name": "Trung Nguyen"
   },

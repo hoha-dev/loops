@@ -3,18 +3,18 @@ id: ST-015
 title: loops-update never drops an upstream change — every conflicting block staged, base-less files shown as conflicts, REVIEW.md carries a block
 trace: ADR-0005 points 1-3 · docs/reviews/2026-10-26-v0.2-review.md F1 F2 F3 F8
 class: high-risk
-status: ready
+status: done
 depends_on: []
 consumes: []
 owns: [template/scripts/loops-update.mjs, test/update.mjs, skills/update/SKILL.md, loops-install-files.txt, template/REVIEW.md, REVIEW.md, CHANGELOG.md, .claude-plugin/plugin.json, docs/LOOP.md, .loops/**]
 opens: []
 adrs: [ADR-0005]
 proof:
-  - T-UPD-9 | unit | a mixed file with two blocks changed upstream, one conflicting locally, stages the conflicting block and carries the clean one; after --continue both upstream changes are in the file | ☐
-  - T-UPD-10 | unit | a managed file with no stored base whose local text differs from upstream is staged as a conflict, never reported unchanged | ☐
-  - T-UPD-11 | unit | init on a repo whose files already exist records a base only for files byte-equal to the template; the next apply stages every other differing file | ☐
-  - T-UPD-12 | unit | every file listed as mixed in loops-install-files.txt has at least one LOOPS:BEGIN block in template/ | ☐
-  - T-UPD-13 | unit | apply with no managed file to touch succeeds while an unrelated file is dirty | ☐
+  - T-UPD-9 | unit | a mixed file with two blocks changed upstream, one conflicting locally, stages the conflicting block and carries the clean one; after --continue both upstream changes are in the file | ✅
+  - T-UPD-10 | unit | a managed file with no stored base whose local text differs from upstream is staged as a conflict, never reported unchanged | ✅
+  - T-UPD-11 | unit | init on a repo whose files already exist records a base only for files byte-equal to the template; the next apply stages every other differing file | ✅
+  - T-UPD-12 | unit | every file listed as mixed in loops-install-files.txt has at least one LOOPS:BEGIN block in template/ | ✅
+  - T-UPD-13 | unit | apply with no managed file to touch succeeds while an unrelated file is dirty | ✅
 ---
 
 # Story Packet: ST-015 — loops-update never drops an upstream change
@@ -58,5 +58,5 @@ Scenario: repo installed before v0.2
 
 ## Story-closing checklist
 
-- [ ] The new cases fail on the code at `e168729` and pass after (say so in the PR with both runs).
-- [ ] All `proof` rows ✅; `node scripts/loops-gen.mjs`; `node scripts/loops-check.mjs` OK; full pre-push set green.
+- [x] The new cases fail on the code at `e168729` and pass after (say so in the PR with both runs).
+- [x] All `proof` rows ✅; `node scripts/loops-gen.mjs`; `node scripts/loops-check.mjs` OK; full pre-push set green.
