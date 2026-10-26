@@ -11,22 +11,19 @@ Run three passes and tag each finding with its pass:
 - **Security:** injection, authentication and authorisation gaps, secrets or PII in logs and error messages, data reaching a client that should not.
 - **Compliance:** the change matches its story packet's Acceptance Criteria and `proof` rows, the ADRs it inherits (`adrs:` in the front matter), and the invariant boundaries in `AGENTS.md`. A diff that touches a path outside the story's `owns` is a compliance finding.
 
-<!-- LOOPS:END passes -->
-
 ## What Important means here
 
 Reserve **Important** for findings that would break behaviour, leak data, or breach an ADR or an AGENTS.md boundary. Style, naming and wording are **Nits**.
 
-<!-- LOOPS:BEGIN labels (harness-owned block — /loops:update may replace it) -->
 ## Labels
 
 Every finding carries `file:line` and the input or state that triggers it. A finding is **PLAUSIBLE** until the person who opens the PR has opened that line; only they mark it **CONFIRMED**. A finding that cannot name a triggering input is a question, not a finding.
 
-<!-- LOOPS:END labels -->
-
 ## Cap the nits
 
 Report at most five nits per review; summarise the rest as a count.
+
+<!-- LOOPS:END passes -->
 
 ## Do not report
 
@@ -50,4 +47,4 @@ Strengths worth keeping: <up to three lines>
 
 ## Monthly tuning (optional, for a team)
 
-Once a month, rate the findings of the past month (useful / noise) and adjust the Important definition and the nit cap above: both sit outside the harness blocks, so a tuned value survives `/loops:update`. A pass that needs changing is a change to propose upstream. A finding flagged for the second time on the same mistake goes into `AGENTS.md` "Things the agent gets wrong" or into a skill, so the next session does not repeat it.
+Once a month, rate the findings of the past month (useful / noise) and adjust the passes, the Important definition and the nit cap above. They sit inside the harness block `passes`: a tuned line is a local edit, and `/loops:update` merges it three-way with upstream's changes (a conflict only where upstream changed the same line). A finding flagged for the second time on the same mistake goes into `AGENTS.md` "Things the agent gets wrong" or into a skill, so the next session does not repeat it.

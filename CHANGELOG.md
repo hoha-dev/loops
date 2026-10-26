@@ -9,8 +9,8 @@ The first entry's version must equal the plugin version (`.claude-plugin/plugin.
 - `loops-update apply` stops before staging when a mixed file lacks a block's markers (a `REVIEW.md` from 0.2.5 or earlier), names the template file to copy the block from, and says "commit, then re-run apply"; 0.2.6 staged it, after which neither `--continue` nor `apply` could proceed (T-UPD-14).
 - `init` records the template as the base of every file again, including a file `/loops:init` merged into, such as an existing `.claude/settings.json`; `init --migrate` keeps 0.2.6's no-base rule for a repo installed before v0.2, and `/loops:update` Step 0a uses it (T-UPD-15). Re-running `init` keeps every stored base (T-UPD-16).
 - With no stored base, any difference from upstream is a conflict, including an upstream that empties the text (T-UPD-17). Mixed files checked out with CRLF are merged and keep CRLF (T-UPD-18). `status` counts only paths the template ships (T-UPD-19).
-- `REVIEW.md`: the Important definition and the nit cap sit outside the harness blocks, so monthly tuning survives an update; blocks are `passes`, `labels`, `output`.
-- `stage-guard` applies on a `story/ST-xxx` branch only (T-HOOK-9). `/loops:start` says the claim becomes visible with the pushed start commit (T-SKL-13).
+- `REVIEW.md` keeps its two blocks; its intro and output heading describe the subagent review, and the tuning paragraph says tuned lines are merged three-way.
+- `stage-guard` applies on a `story/ST-xxx` branch only, judged from the directory the command targets (`git -C`, a leading `cd`) and through a rebase (T-HOOK-9, T-HOOK-10). `/loops:start` says the claim becomes visible with the pushed start commit (T-SKL-13).
 - `/loops:land` Step 5 reviews the diff through the `reviewer` subagent: no `claude -p` call and no `ANTHROPIC_API_KEY` (T-SKL-14).
 
 ## [0.2.6] — 2026-10-26

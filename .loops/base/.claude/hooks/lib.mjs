@@ -36,7 +36,16 @@ export function currentBranch(root) {
     }
     const head = readFileSync(join(gitDir, 'HEAD'), 'utf8').trim();
     const m = head.match(/^ref: refs\/heads\/(.+)$/);
-    return m ? m[1] : null;
+    if (m) return m[1];
+    // A rebase detaches HEAD; the branch being rebased is still the one the session works on.
+    for (const dir of ['rebase-merge', 'rebase-apply']) {
+      const p = join(gitDir, dir, 'head-name');
+      if (existsSync(p)) {
+        const r = readFileSync(p, 'utf8').trim().match(/^refs\/heads\/(.+)$/);
+        if (r) return r[1];
+      }
+    }
+    return null;
   } catch {
     return null;
   }

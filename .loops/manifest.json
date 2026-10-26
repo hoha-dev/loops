@@ -43,7 +43,7 @@
     },
     "scripts/loops-check.mjs": {
       "kind": "managed",
-      "sha256": "473fb910f0f203b96e0aab5a93ec32d8fdc28cce073720f84d56ec16eab41970"
+      "sha256": "293ca41c44f6cc920c0851980cb0deeb10186fa86cc987c4cd7ff41bac6fda5e"
     },
     "scripts/loops-gen.mjs": {
       "kind": "managed",
@@ -51,7 +51,7 @@
     },
     "scripts/loops-update.mjs": {
       "kind": "managed",
-      "sha256": "8716b94f1fc7622ce0193c638080314bfaed0b3b1fa125faf0d91551d8936203"
+      "sha256": "54702ae2ca85a1bb594e689d859a0eaf703a0f5579cb066815a113adc3c92cd9"
     },
     ".claude/settings.json": {
       "kind": "managed",
@@ -59,7 +59,7 @@
     },
     ".claude/hooks/lib.mjs": {
       "kind": "managed",
-      "sha256": "d26c09aea14183b9d558698a9c5acf9cf7249f24c5d38e4b14e24c17a23f9027"
+      "sha256": "86257283d9ef069f68fac47314e39e6c215939f0cf71ee9cacf222833b40394e"
     },
     ".claude/hooks/owns-guard.mjs": {
       "kind": "managed",
@@ -67,7 +67,7 @@
     },
     ".claude/hooks/stage-guard.mjs": {
       "kind": "managed",
-      "sha256": "abf79533ed67c2743b0555c435251484f3f760d37b83bd9a8a1927ae539249a2"
+      "sha256": "140cc575539dcba3fa8022bb0731d1ba264190fe3d9b86c16e595f46f3a90928"
     },
     ".claude/hooks/generated-guard.mjs": {
       "kind": "managed",
@@ -99,7 +99,7 @@
     },
     "REVIEW.md": {
       "kind": "mixed",
-      "sha256": "bfde463dae706ca45df6bf683d783000020af3a10d16dbb50a641abbb0965cf4"
+      "sha256": "1b9e9fa03de4bd45d21a81100a8c0d171de977c6a8ce101904346def2ef7c5d5"
     },
     "AGENTS.md": {
       "kind": "mixed",

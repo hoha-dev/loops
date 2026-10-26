@@ -27,7 +27,7 @@ Otherwise **stop and report** the exact blocker (the column text is the answer):
 node scripts/loops-gen.mjs --claims --fetch                                  # another developer may have claimed it since the wave was computed
 git check-ignore -q .worktrees/x || echo ".worktrees/" >> .gitignore        # commit that line on main first if it was missing
 git worktree add .worktrees/<st-id-lowercase> -b story/<ST-ID> origin/main   # e.g. .worktrees/st-019 story/ST-019; no remote → base on main
-git -C .worktrees/<st-id-lowercase> push -u origin story/<ST-ID>             # on the remote, but not yet a claim: see Step 3 (ADR-0007)
+git -C .worktrees/<st-id-lowercase> push -u origin story/<ST-ID>             # on the remote, not yet a claim (Step 3); rejected → someone else started it: back to /loops:wave (ADR-0007)
 ```
 
 Worktrees live inside the repo at `.worktrees/`, never in a sibling directory: a sibling outlives `git worktree remove` (ignored `node_modules` stay behind) where nobody looks, and `loops-check` notes any worktree outside `.worktrees/` and fails when `.worktrees/` is not git-ignored.

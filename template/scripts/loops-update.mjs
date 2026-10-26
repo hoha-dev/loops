@@ -160,21 +160,22 @@ export function plan(root, plugin) {
 // Write the merged results, the new base and the manifest in one pass (every merge already succeeded).
 // Paths in `noBase` get no base and no manifest entry, so the next apply stages them against upstream;
 // paths in `keep` keep the base and manifest entry they already have.
-function commitPlan(root, plugin, items, manifest, { noBase = new Set(), keep = new Set() } = {}) {
+function commitPlan(root, plugin, items, manifest, { noBase = new Set(), keep = new Set(), version = plugin.version, installed = new Date().toISOString().slice(0, 10) } = {}) {
   for (const it of items) {
     if (it.action === 'update' || it.action === 'create') writeFile(join(root, it.path), it.text);
   }
   const files = {};
   for (const e of plugin.files) {
     if (e.kind === 'seeded' || noBase.has(e.path)) continue;
-    if (keep.has(e.path)) { files[e.path] = manifest.files[e.path]; continue; }
+    if (keep.has(e.path)) { files[e.path] = { ...manifest.files[e.path], kind: e.kind }; continue; }
     const src = join(plugin.template, e.path);
     if (!existsSync(src)) continue;
-    const text = read(src);
+    // Stored and hashed as LF, so a plugin or repo checked out with CRLF compares equal (status, loops-check 14).
+    const text = toLF(read(src));
     writeFile(join(root, BASE_DIR, e.path), text);
     files[e.path] = { kind: e.kind, sha256: sha256(text) };
   }
-  writeManifest(root, { version: plugin.version, installed: new Date().toISOString().slice(0, 10), frozen: manifest.frozen, files });
+  writeManifest(root, { version, installed, frozen: manifest.frozen, files });
 }
 
 // For `init --migrate` (a repo installed before v0.2): a file that already differs from the template was
@@ -204,7 +205,8 @@ export function cmdInit(root, plugin, { migrate = false } = {}) {
   const m = readManifest(root);
   const keep = new Set(Object.keys(m?.files ?? {}).filter((p) => existsSync(join(root, BASE_DIR, p))));
   const noBase = new Set(migrate ? plugin.files.filter((e) => e.kind !== 'seeded' && !keep.has(e.path) && differsFromTemplate(root, plugin, e)).map((e) => e.path) : []);
-  commitPlan(root, plugin, [], m ?? { files: {}, frozen: [] }, { noBase, keep });
+  // A re-run records new files only; the version stays the installed one until apply merges the files.
+  commitPlan(root, plugin, [], m ?? { files: {}, frozen: [] }, { noBase, keep, ...(m ? { version: m.version, installed: m.installed } : {}) });
   if (keep.size) console.log(`loops-update: kept the stored base of ${keep.size} file(s) already in ${MANIFEST}`);
   if (noBase.size) console.log(`loops-update: no base recorded for ${noBase.size} file(s) that differ from this template; the next apply stages them against upstream: ${[...noBase].join(', ')}`);
   const gi = join(root, '.gitignore');

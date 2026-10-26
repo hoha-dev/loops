@@ -268,7 +268,7 @@ test('T-UPD-16 re-running init keeps the stored base of a file edited since inst
   expect(rd(join(d, '.loops/base', MANAGED)) === rd(join(p1, 'template', MANAGED)), 'expected the stored base kept, not replaced by the new template');
   const entry = JSON.parse(rd(join(d, '.loops/manifest.json'))).files[MANAGED];
   expect(entry?.sha256 === createHash('sha256').update(rd(join(p1, 'template', MANAGED))).digest('hex'), 'expected the manifest entry to keep describing the stored base', JSON.stringify(entry));
-  git(d, 'add', '.loops'); git(d, 'commit', '-q', '-m', 'reinit');
+  expect(/installed: 0\.2\.5\s+plugin: 0\.2\.7\s+→ update available/.test(sh(d, ['status', '--plugin', p2]).out), 'expected re-init to leave the installed version until apply');
   const r = sh(d, ['apply', '--plugin', p2]);
   const t = rd(join(d, MANAGED));
   expect(r.code === 0 && t.startsWith('local first line') && /upstream last line\n$/.test(t), 'expected a clean three-way merge keeping both edits', r.out);
@@ -293,6 +293,8 @@ test('T-UPD-18 a mixed file checked out with CRLF has its blocks merged and keep
   const after = rd(join(d, MIXED));
   expect(r.code === 0 && !/missing-block/.test(r.out) && /UPSTREAM-CRLF/.test(after), 'expected the block found and merged', r.out);
   expect(!/[^\r]\n/.test(after), 'expected the file to stay CRLF throughout');
+  git(d, 'add', MIXED, '.loops'); git(d, 'commit', '-q', '-m', 'updated');
+  expect(/no managed file modified locally/.test(sh(d, ['status', '--plugin', p2]).out), 'expected no drift reported for a CRLF checkout');
 });
 
 test('T-UPD-19 status does not count a manifest path the template does not ship as a file without a base', () => {

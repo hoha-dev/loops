@@ -57,7 +57,7 @@ Before opening the PR, bring the branch up to date with `origin/main`. When anot
 Before writing the PR description, have the diff reviewed in a fresh context by the `reviewer` subagent (`.claude/agents/reviewer.md`: Read, Grep, Glob; it starts with none of this session's context and needs no API key):
 
 ```bash
-git diff origin/main...HEAD > "${TMPDIR:-/tmp}/<st-id-lowercase>.diff"      # outside the repo: never staged
+git diff origin/main...HEAD > <scratch-dir>/<st-id-lowercase>.diff      # any directory outside the repo (the session scratch dir, $TMPDIR, $env:TEMP): never staged
 ```
 
 Hand the subagent, as its whole task: the diff's path; the worktree path (its line numbers must refer to those files, so the worktree stays until the review returns); `REVIEW.md`; the story file; every ADR in `adrs`; and the Step 1 results as a given — it runs nothing (L27). Ask for the output shape in `REVIEW.md`. Then open every line it cites: a finding becomes **CONFIRMED** only once you have seen it at that line (reproduce it when it claims behaviour), stays PLAUSIBLE otherwise, and a wrong coordinate is corrected before it reaches the PR. A CONFIRMED Important finding inside `owns` is fixed before the PR, with the run repeated; one outside `owns` names the story that takes it. The findings do **not** approve or block anything: a person approves the PR. Optionally delegate the verification run to `.claude/agents/verifier.md` for a fresh-context report and paste it under "Verification".

@@ -74,6 +74,7 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-HOOK-7 | owns-guard on branch story/ST-019 allows a Write of a new docs/decisions/ADR-0003-x.md and an Edit of docs/decisions/OPEN.md, and blocks an Edit of the existing Proposed docs/decisions/ADR-0002-x.md | `unit` | ✅ |
 | T-HOOK-8 | adr-guard allows an Edit whose old_string is the "Enforced by" line of an Accepted ADR and still blocks a body edit | `unit` | ✅ |
 | T-HOOK-9 | stage-guard allows git add -A on main and outside any repo, and blocks it on a story/ST-xxx branch | `unit` | ✅ |
+| T-HOOK-10 | stage-guard checks the branch of the directory a command targets (git -C dir, a leading cd dir) and of a story branch being rebased (detached HEAD) | `unit` | ✅ |
 
 ### ISO
 

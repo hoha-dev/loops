@@ -2,7 +2,18 @@
 // PreToolUse · Bash
 // `git add -A`, `git add .`, `git add --all` and `git commit -a` stage whatever is in the tree, which
 // is how a session commits another story's files (L21). On a story branch, staging is by exact path.
+import { resolve } from 'node:path';
 import { readInput, repoRoot, currentBranch, block, run } from './lib.mjs';
+
+// The directories a command can stage in: the session's cwd, and any `git -C <dir>` or `cd <dir>` in it,
+// so a session in the main checkout cannot stage a whole story worktree by naming it.
+function targetDirs(input, cmd) {
+  const cwd = resolve(input.cwd || process.cwd());
+  const dirs = [cwd];
+  for (const m of cmd.matchAll(/\bgit\s+-C\s+(['"]?)([^'"\s;&|]+)\1/g)) dirs.push(resolve(cwd, m[2]));
+  for (const m of cmd.matchAll(/(?:^|[;&|(]\s*)cd\s+(['"]?)([^'"\s;&|)]+)\1/g)) dirs.push(resolve(cwd, m[2]));
+  return dirs;
+}
 
 await run('stage-guard', async () => {
   const input = readInput();
@@ -10,8 +21,8 @@ await run('stage-guard', async () => {
   if (!input || !['Bash', 'PowerShell'].includes(input.tool_name)) return;
   // The rule is about one story's owns, so it holds on a story branch only (as owns-guard does): on main,
   // or in a throwaway repo a command builds, there is no owns to stage by.
-  if (!/^story\/ST-\d+/.test(currentBranch(repoRoot(input)) ?? '')) return;
   const cmd = String(input.tool_input?.command ?? '');
+  if (!targetDirs(input, cmd).some((d) => /^story\/ST-\d+/.test(currentBranch(repoRoot({ cwd: d })) ?? ''))) return;
   // Every spelling that stages the whole tree: -A, --all, -u/--update (all tracked changes), ".", "./",
   // "*" (quoted or not), ":/" (the pathspec root), also after "--" (self-review F4).
   const addAll = /\bgit\s+(-C\s+\S+\s+)?add\s+(?:[^|&;\n]*\s)?['"]?(-A|--all|-u|--update|\.\/?|\*|:\/)['"]?(\s|$|[;&|])/.test(cmd);
