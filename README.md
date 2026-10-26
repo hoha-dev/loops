@@ -133,3 +133,7 @@ Contributions follow the same loop: read [`AGENTS.md`](AGENTS.md) and [`docs/FEA
 
 - The stage layout follows *The AI-native SDLC playbook* (Claude Academy). Lesson numbers cited in the docs refer to that course.
 - The stored-base update, encoding a boundary with enforcement levels, and improvement experiments on file were adapted from [repository-harness](https://github.com/hoangnb24/repository-harness) (see [INT-002](docs/intents/INT-002-ideas-from-repository-harness.md)).
+
+## License
+
+[MIT](LICENSE) © 2026 Trung Nguyen

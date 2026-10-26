@@ -16,5 +16,6 @@
     "claude-code"
   ],
   "homepage": "https://github.com/hoha-dev/loops",
-  "repository": "https://github.com/hoha-dev/loops"
+  "repository": "https://github.com/hoha-dev/loops",
+  "license": "MIT"
 }
