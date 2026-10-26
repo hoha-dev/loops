@@ -75,6 +75,14 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-HOOK-8 | adr-guard allows an Edit whose old_string is the "Enforced by" line of an Accepted ADR and still blocks a body edit | `unit` | ✅ |
 | T-HOOK-9 | stage-guard allows git add -A on main and outside any repo, and blocks it on a story/ST-xxx branch | `unit` | ☐ → ST-016 |
 
+### ISO
+
+| ID | Behavior | Proof | Status |
+| --- | --- | --- | --- |
+| T-ISO-1 | this repo's .githooks/pre-push, run by git push from a linked worktree, leaves the main repo's refs and config unchanged; the same hook without its env-clearing line changes them | `unit` | ☐ → ST-018 |
+| T-ISO-2 | test/git-env.mjs removes every variable git rev-parse --local-env-vars lists, so a git init and git config in a temp dir started with GIT_DIR pointing at a sentinel repo leave the sentinel unchanged | `unit` | ☐ → ST-018 |
+| T-ISO-3 | test/run.mjs, test/hooks.mjs and test/release.mjs import test/git-env.mjs before any other import | `unit` | ☐ → ST-018 |
+
 ### PAR
 
 | ID | Behavior | Proof | Status |
