@@ -3,6 +3,7 @@
 // to what consumers receive (template/, skills/, loops-install-files.txt) bumps it.
 //   node test/release.mjs              check this repo (exit 1 on a mismatch)
 //   node test/release.mjs --fixtures   T-REL-1 / T-REL-2 on throwaway repos
+import './git-env.mjs';
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
