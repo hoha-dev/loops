@@ -74,6 +74,7 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-HOOK-7 | owns-guard on branch story/ST-019 allows a Write of a new docs/decisions/ADR-0003-x.md and an Edit of docs/decisions/OPEN.md, and blocks an Edit of the existing Proposed docs/decisions/ADR-0002-x.md | `unit` | ✅ |
 | T-HOOK-8 | adr-guard allows an Edit whose old_string is the "Enforced by" line of an Accepted ADR and still blocks a body edit | `unit` | ✅ |
 | T-HOOK-9 | stage-guard allows git add -A on main and outside any repo, and blocks it on a story/ST-xxx branch | `unit` | ☐ → ST-016 |
+| T-HOOK-9 | stage-guard allows git add -A on main and outside any repo, and blocks it on a story/ST-xxx branch | `unit` | ☐ → ST-019 |
 
 ### ISO
 
@@ -115,6 +116,8 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-SKL-11 | skills/init/SKILL.md names one English template, no Vietnamese canonical tree and no mirror | `manual` | ✅ |
 | T-SKL-12 | skills/init/SKILL.md Step 3 rewrites "This repo's foundation checklist" in docs/LOOP.md from the SAD and the ADRs it generated, one seam per line with its ADR, and Step 4 checks that none of the shipped example lines is left | `manual` | ✅ |
 | T-SKL-13 | skills/start/SKILL.md says the claim is visible to other clones once the start commit is pushed, not when the empty branch is pushed | `manual` | ☐ → ST-016 |
+| T-SKL-13 | skills/start/SKILL.md says the claim is visible to other clones once the start commit is pushed, not when the empty branch is pushed | `manual` | ☐ → ST-019 |
+| T-SKL-14 | skills/land/SKILL.md Step 5 runs the review through the reviewer subagent on a saved diff, with no claude -p call and no ANTHROPIC_API_KEY, and the lead opens each line before calling a finding CONFIRMED | `manual` | ☐ → ST-019 |
 
 ### UPD
 
@@ -131,6 +134,12 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-UPD-11 | init on a repo whose files already exist records a base only for files byte-equal to the template; the next apply stages every other differing file | `unit` | ✅ |
 | T-UPD-12 | every file listed as mixed in loops-install-files.txt has at least one LOOPS:BEGIN block in template/ | `unit` | ✅ |
 | T-UPD-13 | apply with no managed file to touch succeeds while an unrelated file is dirty | `unit` | ✅ |
+| T-UPD-14 | apply that finds a mixed file without a block's markers stages nothing, exits 1, and names the block, the template file to copy it from, and "commit, then re-run apply" | `unit` | ☐ → ST-019 |
+| T-UPD-15 | init records the template as base for a file the install merged into (fresh install); init --migrate records no base for it, and status names it | `unit` | ☐ → ST-019 |
+| T-UPD-16 | re-running init on an installed repo keeps the stored base of a file edited since install, so the next apply is a three-way merge | `unit` | ☐ → ST-019 |
+| T-UPD-17 | with no stored base, an upstream that empties a file or block is a conflict, not a silent keep | `unit` | ☐ → ST-019 |
+| T-UPD-18 | a mixed file checked out with CRLF line endings has its blocks found and merged | `unit` | ☐ → ST-019 |
+| T-UPD-19 | status does not count a manifest path the plugin template does not ship as a file without a base | `unit` | ☐ → ST-019 |
 <!-- LOOPS:GEN-END test-matrix -->
 
 ## Behaviors without an owning story
