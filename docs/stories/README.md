@@ -28,6 +28,7 @@
 | [ST-010](ST-010-improvement-experiments-on-file.md) | An improvement experiment is a file with a removal condition | SPEC-002 row 4, INT-002 row 4 | 🟡 | ✅ | ST-008 |  |
 | [ST-011](ST-011-several-developers.md) | Several developers — pushed claims, fetch before a wave, ids allocated across branches, owns-guard narrowed | SPEC-002 row 9, INT-002 row 9, ADR-0007 | 🔴 | ✅ | ST-009 |  |
 | [ST-012](ST-012-mechanical-release.md) | CHANGELOG, a release check, version 0.2.0, and the docs that describe v0.2 | SPEC-002 row 5, INT-002 row 5 | 🟡 | ✅ | ST-008, ST-009, ST-010, ST-011 |  |
+| [ST-013](ST-013-boundary-lines-and-executable-hook.md) | loops-check 5b reads only boundary lines, item 9 sees a non-executable .githooks hook, init names one template | ADR-0006 points 1 and 3 | 🔴 | ✅ |  |  |
 <!-- LOOPS:GEN-END backlog -->
 
 ## Template

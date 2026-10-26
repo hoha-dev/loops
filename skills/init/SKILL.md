@@ -5,7 +5,7 @@ description: Bootstrap the agent-harness docs framework into a repo (new or exis
 
 # loops:init — bootstrap the harness into a repo
 
-Generate a filled-in harness (not a pile of placeholders) for the repo in the current working directory. The template lives in this plugin at `${CLAUDE_PLUGIN_ROOT}/template/` (Vietnamese, canonical) and `${CLAUDE_PLUGIN_ROOT}/template/` (English mirror); the harness version is the `version` field of `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — the single version source. (When run outside a plugin install, resolve those paths relative to this file: `../../`.)
+Generate a filled-in harness (not a pile of placeholders) for the repo in the current working directory. The template lives in this plugin at `${CLAUDE_PLUGIN_ROOT}/template/` — one tree, in English (ADR-0001); the harness version is the `version` field of `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — the single version source. (When run outside a plugin install, resolve those paths relative to this file: `../../`.)
 
 ## Hard rules
 
@@ -31,7 +31,7 @@ Ask only what the scan couldn't answer. Confirm what it could. Collect:
 | Input | Maps to slots | Notes |
 | ----- | ------------- | ----- |
 | Project name + one-liner | `PROJECT_NAME`, `PROJECT_ONELINER` | 2–4 sentences, no marketing |
-| Docs language | choice of template | VI → `template/`, EN → `template/`; another language → translate from EN |
+| Docs language | `DOCS_LANGUAGE` | the language of the repo's own content (product docs, ADR bodies, stories); the shipped files keep their English text, including the convention phrases `loops-check` looks for |
 | Settled stack + its rationale | `STACK` + ADR-0001 | if the stack isn't settled, ADR-0001 stays `Proposed` |
 | 3–7 invariant boundaries | `BOUNDARIES`, `HIGH_RISK_AREAS`, `HIGH_RISK_KEYWORDS` | propose candidates from the scan; each confirmed boundary gets a short ADR. Starting with 1–3 is fine — boundaries grow with ADRs |
 | Dev + verify commands | `COMMANDS`, `VERIFY_COMMANDS` | verify against package.json/CI, don't copy blindly |

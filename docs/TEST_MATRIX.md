@@ -37,6 +37,8 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-CORE-5 | A normal story with a Proposed ADR gets a note, not a failure | `unit` | ✅ |
 | T-CORE-6 | An ADR file without a Status line is treated as Proposed and the check says so | `unit` | ✅ |
 | T-CORE-7 | loops-check fails when .claude/settings.json names a hook script that does not exist, and notes when settings.json has no hooks block | `unit` | ✅ |
+| T-CORE-9 | on macOS/Linux a .githooks/pre-push without the executable bit does not count as invoker, and the note names chmod +x | `unit` | ✅ |
+| T-CORE-10 | a .githooks hook committed as mode 100644 is noted with "git update-index --chmod=+x" even where this clone runs it | `unit` | ✅ |
 
 ### DOC
 
@@ -56,6 +58,7 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | --- | --- | --- | --- |
 | T-ENF-1 | loops-check notes an ADR referenced from an AGENTS.md boundary that has no "Enforced by:" line, and is silent once the line exists | `unit` | ✅ |
 | T-ENF-2 | loops-check item 9 prints "declared in" with the sentence that CI presence is not proof of a run and branch protection is unverified | `unit` | ✅ |
+| T-ENF-3 | an ADR named in AGENTS.md outside a "→ ADR-nnnn" boundary line gets no Enforced-by note; an AGENTS.md with no such line still has every reference checked | `unit` | ✅ |
 
 ### HOOK
 
@@ -99,6 +102,7 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-SKL-8 | /loops:update recognises a repo on the predecessor harness (HARNESS: markers, HARNESS.md) and migrates markers, file names and the invoker before diffing | `manual` | ✅ |
 | T-SKL-9 | skills/encode/SKILL.md walks authority → boundary table → smallest check → positive and negative proof → Enforced by line → four levels; evals/skills/encode.json has three phrasings | `manual` | ✅ |
 | T-SKL-10 | docs/templates/improvement.md has the fields representative job · baseline · earliest gap (one of six kinds) · owner · hypothesis "If X at Y then a fresh agent will Z because M" · evidence that would weaken it · maintenance owner and removal condition · fresh rerun · verdict; /loops:improve writes docs/reviews/YYYY-MM-DD-improve-<slug>.md from it and adds the LESSONS entry only on Keep | `manual` | ✅ |
+| T-SKL-11 | skills/init/SKILL.md names one English template, no Vietnamese canonical tree and no mirror | `manual` | ✅ |
 
 ### UPD
 

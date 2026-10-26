@@ -2,7 +2,7 @@
 // Fixture tests for template/scripts/loops-check.mjs and loops-gen.mjs.
 // Each case builds a throwaway repo from template/, runs the real scripts, and asserts on exit code
 // and output. Run from the harness repo root: `node test/run.mjs` (add a case name to run one).
-import { cpSync, readdirSync, statSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, existsSync, utimesSync } from 'node:fs';
+import { cpSync, readdirSync, statSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, existsSync, utimesSync, chmodSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
@@ -49,7 +49,7 @@ function fixture(name, { hook = true } = {}) {
   git(dir, 'config', 'core.autocrlf', 'false');
   if (hook) {
     mkdirSync(join(dir, '.githooks'), { recursive: true });
-    writeFileSync(join(dir, '.githooks/pre-push'), '#!/bin/sh\nnode scripts/loops-check.mjs\n');
+    writeFileSync(join(dir, '.githooks/pre-push'), '#!/bin/sh\nnode scripts/loops-check.mjs\n', { mode: 0o755 });
     git(dir, 'config', 'core.hooksPath', '.githooks');
   }
   return dir;
@@ -445,6 +445,40 @@ test('T-ENF-1 enforced-by: a boundary ADR without the line is noted, with it is 
   write(d, 'docs/decisions/ADR-0009-sql.md', '# ADR-0009\n\n- **Status:** Accepted\n- **Date:** 2026-01-01\n- **Enforced by:** `scripts/no-raw-sql.mjs` (T-SQL-1 positive, T-SQL-2 negative)\n');
   r = check(d);
   expect(r.code === 0 && !/ADR-0009 backs/.test(r.out), 'expected no note once the line exists', r.out);
+});
+
+test('T-ENF-3 enforced-by: only "→ ADR-nnnn" boundary lines are noted; without any arrow line every reference counts', () => {
+  const d = fixture('enforced-by-lines');
+  const base = readFileSync(join(d, 'AGENTS.md'), 'utf8');
+  write(d, 'docs/decisions/ADR-0009-sql.md', '# ADR-0009\n\n- **Status:** Accepted\n- **Date:** 2026-01-01\n');
+  write(d, 'docs/decisions/ADR-0010-stack.md', '# ADR-0010\n\n- **Status:** Accepted\n- **Date:** 2026-01-01\n');
+  write(d, 'AGENTS.md', `${base}\n- **No raw SQL outside the repository layer.** → ADR-0009\n\nNode 24 · Postgres. Source: ADR-0010.\n`);
+  let r = check(d);
+  expect(r.code === 0 && /ADR-0009 backs an AGENTS\.md boundary/.test(r.out), 'expected the boundary ADR noted', r.out);
+  expect(!/ADR-0010 backs/.test(r.out), 'expected no note for a Stack citation', r.out);
+  write(d, 'AGENTS.md', `${base}\nNode 24 · Postgres. Source: ADR-0010.\n`);
+  r = check(d);
+  expect(r.code === 0 && /ADR-0010 backs an AGENTS\.md boundary/.test(r.out), 'expected every reference checked when no line has an arrow', r.out);
+});
+
+test('T-CORE-9 invoker: a .githooks hook without the executable bit does not count on macOS/Linux', () => {
+  if (process.platform === 'win32') return;
+  const d = fixture('hook-mode');
+  chmodSync(join(d, '.githooks/pre-push'), 0o644);
+  const r = check(d);
+  expect(r.code === 1, 'expected a failure: git skips a non-executable hook, so nothing invokes loops-check', r.out);
+  expect(/not executable — run "chmod \+x \.githooks\/pre-push/.test(r.out), 'expected the note to name chmod +x', r.out);
+});
+
+test('T-CORE-10 invoker: a .githooks hook committed as 100644 is noted even where this clone runs it', () => {
+  const d = fixture('hook-index-mode');
+  commitAll(d, 'init');
+  git(d, 'update-index', '--chmod=-x', '.githooks/pre-push');
+  const r = check(d);
+  expect(r.code === 0 && /declared in: \.githooks\/pre-push/.test(r.out), 'expected the hook still to count here', r.out);
+  expect(/committed without the executable bit \(mode 100644\).*git update-index --chmod=\+x \.githooks\/pre-push/.test(r.out), 'expected the committed-mode note', r.out);
+  git(d, 'update-index', '--chmod=+x', '.githooks/pre-push');
+  expect(!/mode 100644/.test(check(d).out), 'expected no note once the index carries 100755');
 });
 
 test('T-WT-1 worktrees: one outside .worktrees/ is a note; inside it is silent once git-ignored', () => {
