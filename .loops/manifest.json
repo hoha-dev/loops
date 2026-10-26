@@ -51,7 +51,7 @@
     },
     "scripts/loops-update.mjs": {
       "kind": "managed",
-      "sha256": "54702ae2ca85a1bb594e689d859a0eaf703a0f5579cb066815a113adc3c92cd9"
+      "sha256": "f9c460f0cfb3c44080f167c959ec0bbe2d5fbbb6c4f04d42b8a4e0afed565153"
     },
     ".claude/settings.json": {
       "kind": "managed",
@@ -67,7 +67,7 @@
     },
     ".claude/hooks/stage-guard.mjs": {
       "kind": "managed",
-      "sha256": "140cc575539dcba3fa8022bb0731d1ba264190fe3d9b86c16e595f46f3a90928"
+      "sha256": "93bbf28ef982c1b5c5301a05772062ac530060a84fff4586f98545ff9738257f"
     },
     ".claude/hooks/generated-guard.mjs": {
       "kind": "managed",

@@ -205,6 +205,18 @@ test('T-HOOK-10 stage-guard: judged by the directory the command targets and thr
   expect(r.code === 0 && denied(r), 'expected a block while a story branch is being rebased', r);
 });
 
+test('T-HOOK-10b stage-guard: cd on its own line, chained cds, quoted paths with spaces, an unknown target near a story worktree', () => {
+  const d = repo('stage-target2', { branch: null });
+  git(d, 'worktree', 'add', '-q', '.worktrees/st 019', '-b', 'story/ST-019-y');
+  for (const c of ['cd ".worktrees/st 019"\ngit add -A', '  cd .worktrees && cd "st 019" && git add -A', 'git -C ".worktrees/st 019" add -A', 'cd "$WT" && git add -A']) {
+    const r = hook('stage-guard', d, bash(c));
+    expect(r.code === 0 && denied(r), `expected a block from main for: ${JSON.stringify(c)}`, r);
+  }
+  const lone = repo('stage-target3', { branch: null });
+  const r = hook('stage-guard', lone, bash('cd "$TMPDIR/x" && git add -A'));
+  expect(!denied(r), 'expected an unknown target to pass in a repo with no story worktree', r);
+});
+
 const only = process.argv[2];
 let failed = 0;
 for (const c of cases) {

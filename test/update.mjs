@@ -306,6 +306,17 @@ test('T-UPD-19 status does not count a manifest path the template does not ship 
   expect(/→ current/.test(s.out) && !/without a base/.test(s.out), 'expected current', s.out);
 });
 
+test('T-UPD-16b re-running init does not give the new template as base to a path that had none; apply stages it', () => {
+  const p1 = plugin('p16c', '0.2.6'); const d = repo('r16b', p1);
+  const mp = join(d, '.loops/manifest.json'); const m = JSON.parse(rd(mp)); delete m.files[MANAGED]; wr(mp, JSON.stringify(m, null, 2));
+  rmSync(join(d, '.loops/base', MANAGED));
+  wr(join(d, MANAGED), `${rd(join(d, MANAGED))}\nrepo line\n`); git(d, 'add', '.loops', MANAGED); git(d, 'commit', '-q', '-m', 'migrated, no base');
+  const p2 = plugin('p16d', '0.2.7'); wr(join(p2, 'template', MANAGED), `${rd(join(p2, 'template', MANAGED))}\nUPSTREAM-LINE\n`);
+  expect(sh(d, ['init', '--plugin', p2]).code === 0 && !existsSync(join(d, '.loops/base', MANAGED)), 'expected still no base after the re-run');
+  const r = sh(d, ['apply', '--plugin', p2]);
+  expect(r.code === 2 && /conflict\s+docs\/templates\/runbook\.md\s+— no stored base/.test(r.out), 'expected a conflict, not a silent keep', r.out);
+});
+
 const only = process.argv[2];
 let failed = 0;
 for (const c of cases) {

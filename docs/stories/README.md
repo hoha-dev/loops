@@ -34,7 +34,7 @@
 | [ST-016](ST-016-stage-guard-story-scoped.md) | stage-guard applies only on a story branch; /loops:start says when the claim becomes visible | ADR-0004, ADR-0007 · docs/reviews/2026-10-26-v0.2-review.md F4 F7 | 🔴 | ✅ | ST-015 |  |
 | [ST-017](ST-017-run-the-eval-suite.md) | Run the eval suite once and attest the manual skill proofs by a run | SPEC-002 · docs/reviews/2026-10-06-v0.1-self-review.md F5 · docs/reviews/2026-10-26-v0.2-review.md F5 | 🟡 | ☐ |  | OPEN-004 still open |
 | [ST-018](ST-018-tests-never-touch-the-real-repo.md) | Fixture tests never write to the real repo, even when pre-push runs from a linked worktree | AGENTS.md "Common commands" (pre-push runs the full set) · incident 2026-10-26 during /loops:start ST-015 | 🟡 | ✅ |  |  |
-| [ST-019](ST-019-finish-v0-2.md) | loops 0.2.7 — update and init without dead ends, stage-guard on story branches, the land review by a subagent | independent review of ST-015 (PR #2, 2026-10-26) · docs/reviews/2026-10-26-v0.2-review.md F4 F7 · ST-016 | 🔴 | 🟡 |  |  |
+| [ST-019](ST-019-finish-v0-2.md) | loops 0.2.7 — update and init without dead ends, stage-guard on story branches, the land review by a subagent | independent review of ST-015 (PR #2, 2026-10-26) · docs/reviews/2026-10-26-v0.2-review.md F4 F7 · ST-016 | 🔴 | ✅ |  |  |
 <!-- LOOPS:GEN-END backlog -->
 
 ## Template

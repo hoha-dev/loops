@@ -167,7 +167,7 @@ function commitPlan(root, plugin, items, manifest, { noBase = new Set(), keep = 
   const files = {};
   for (const e of plugin.files) {
     if (e.kind === 'seeded' || noBase.has(e.path)) continue;
-    if (keep.has(e.path)) { files[e.path] = { ...manifest.files[e.path], kind: e.kind }; continue; }
+    if (keep.has(e.path)) { files[e.path] = { kind: e.kind, sha256: sha256(toLF(read(join(root, BASE_DIR, e.path)))) }; continue; }
     const src = join(plugin.template, e.path);
     if (!existsSync(src)) continue;
     // Stored and hashed as LF, so a plugin or repo checked out with CRLF compares equal (status, loops-check 14).
@@ -204,7 +204,9 @@ function dirtyManaged(root, paths) {
 export function cmdInit(root, plugin, { migrate = false } = {}) {
   const m = readManifest(root);
   const keep = new Set(Object.keys(m?.files ?? {}).filter((p) => existsSync(join(root, BASE_DIR, p))));
-  const noBase = new Set(migrate ? plugin.files.filter((e) => e.kind !== 'seeded' && !keep.has(e.path) && differsFromTemplate(root, plugin, e)).map((e) => e.path) : []);
+  // On a re-run, a path without a stored base was installed from an unknown text too, so it follows the
+  // --migrate rule; giving it this template as base would make the next apply keep the repo's side unseen.
+  const noBase = new Set(migrate || m ? plugin.files.filter((e) => e.kind !== 'seeded' && !keep.has(e.path) && differsFromTemplate(root, plugin, e)).map((e) => e.path) : []);
   // A re-run records new files only; the version stays the installed one until apply merges the files.
   commitPlan(root, plugin, [], m ?? { files: {}, frozen: [] }, { noBase, keep, ...(m ? { version: m.version, installed: m.installed } : {}) });
   if (keep.size) console.log(`loops-update: kept the stored base of ${keep.size} file(s) already in ${MANIFEST}`);
@@ -217,7 +219,8 @@ export function cmdInit(root, plugin, { migrate = false } = {}) {
     cur = `${cur}${cur && !cur.endsWith('\n') ? '\n' : ''}${line}\n`;
   }
   writeFileSync(gi, cur);
-  console.log(`loops-update: recorded base for ${Object.keys(readManifest(root).files).length} file(s) at version ${plugin.version} in ${MANIFEST}`);
+  const written = readManifest(root);
+  console.log(`loops-update: recorded base for ${Object.keys(written.files).length} file(s) in ${MANIFEST} (installed version ${written.version})`);
   return 0;
 }
 
