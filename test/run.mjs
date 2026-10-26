@@ -2,11 +2,12 @@
 // Fixture tests for template/scripts/loops-check.mjs and loops-gen.mjs.
 // Each case builds a throwaway repo from template/, runs the real scripts, and asserts on exit code
 // and output. Run from the harness repo root: `node test/run.mjs` (add a case name to run one).
+import './git-env.mjs';
 import { cpSync, readdirSync, statSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, existsSync, utimesSync, chmodSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TEMPLATE = join(ROOT, 'template');
@@ -510,6 +511,79 @@ test('T-ENF-2 enforcement levels: the invoker is reported as declared, not as pr
   const r = check(d);
   expect(r.code === 0 && /declared in: \.gitlab-ci\.yml — a declaration in the repo is not proof the job ran on this revision; branch protection is unverified/.test(r.out), 'expected the four-levels wording', r.out);
   expect(!/invoked from/.test(r.out), 'expected the old wording gone', r.out);
+});
+
+// A probe that does what a fixture does: git init and git config in a fresh temp dir, trusting cwd.
+function isoProbe(name, { cleanFirst }) {
+  const p = join(WORK, `${name}-probe.mjs`);
+  writeFileSync(p, [
+    cleanFirst ? `import ${JSON.stringify(pathToFileURL(join(ROOT, 'test/git-env.mjs')).href)};` : '',
+    "import { spawnSync } from 'node:child_process';",
+    "import { mkdtempSync } from 'node:fs';",
+    "import { join } from 'node:path';",
+    "import { tmpdir } from 'node:os';",
+    "const d = mkdtempSync(join(tmpdir(), 'loops-iso-'));",
+    "spawnSync('git', ['init', '-q', d]);",
+    "spawnSync('git', ['config', 'user.name', 'leaked'], { cwd: d });",
+  ].join('\n'));
+  return p;
+}
+// A repo whose own user.name is "owner"; reports what a probe left in it.
+function isoRepo(name) {
+  const d = join(WORK, name);
+  mkdirSync(d, { recursive: true });
+  git(d, 'init', '-q', '-b', 'main');
+  git(d, 'config', 'user.email', 'owner@example.com');
+  git(d, 'config', 'user.name', 'owner');
+  write(d, 'f.txt', 'x\n');
+  git(d, 'add', 'f.txt');
+  git(d, 'commit', '-q', '-m', 'init');
+  return d;
+}
+const isoState = (d) => ({ user: git(d, 'config', '--local', 'user.name').trim(), bare: sh(d, 'git', ['config', '--local', 'core.bare']).out.trim(), head: git(d, 'rev-parse', 'main').trim() });
+
+test('T-ISO-1 pre-push run from a linked worktree leaves the main repo untouched; without its unset line the probe leaks', () => {
+  const UNSET = 'unset $(git rev-parse --local-env-vars)';
+  const hook = readFileSync(join(ROOT, '.githooks/pre-push'), 'utf8');
+  expect(hook.includes(UNSET), `expected .githooks/pre-push to carry "${UNSET}"`);
+  const head = hook.slice(0, hook.indexOf(UNSET) + UNSET.length);
+  const run = (name, preamble) => {
+    const d = isoRepo(name);
+    const origin = join(WORK, `${name}-origin.git`);
+    git(WORK, 'init', '-q', '--bare', origin);
+    git(d, 'remote', 'add', 'origin', origin);
+    const hooks = join(WORK, `${name}-hooks`);
+    mkdirSync(hooks, { recursive: true });
+    writeFileSync(join(hooks, 'pre-push'), `${preamble}\n${JSON.stringify(process.execPath)} ${JSON.stringify(isoProbe(name, { cleanFirst: false }))}\n`, { mode: 0o755 });
+    git(d, 'config', 'core.hooksPath', hooks);
+    const before = isoState(d);
+    git(d, 'worktree', 'add', '-q', '.worktrees/w', '-b', 'story/ST-001');
+    const r = sh(join(d, '.worktrees/w'), 'git', ['push', '-q', 'origin', 'story/ST-001']);
+    return { before, after: isoState(d), out: r.out };
+  };
+  const fixed = run('iso-hook', head);
+  expect(JSON.stringify(fixed.after) === JSON.stringify(fixed.before), 'expected user.name, core.bare and main unchanged by the hook', `${JSON.stringify(fixed)}`);
+  const bare = run('iso-hook-bare', head.replace(UNSET, ''));
+  expect(bare.after.user === 'leaked', 'negative control: without the unset line the probe should have written user.name into the main repo', JSON.stringify(bare));
+});
+
+test('T-ISO-2 git-env.mjs drops GIT_DIR: a probe started with GIT_DIR at a sentinel repo leaves it untouched; without the import it leaks', () => {
+  const run = (name, cleanFirst) => {
+    const d = isoRepo(name);
+    const r = spawnSync(process.execPath, [isoProbe(name, { cleanFirst })], { encoding: 'utf8', env: { ...process.env, GIT_DIR: join(d, '.git') } });
+    return { after: isoState(d), out: `${r.stdout}${r.stderr}` };
+  };
+  const clean = run('iso-env', true);
+  expect(clean.after.user === 'owner', 'expected the sentinel user.name unchanged', JSON.stringify(clean));
+  const raw = run('iso-env-raw', false);
+  expect(raw.after.user === 'leaked', 'negative control: without git-env.mjs the probe should have written into the sentinel', JSON.stringify(raw));
+});
+
+test('T-ISO-3 runners that spawn git import test/git-env.mjs before anything else', () => {
+  for (const f of ['test/run.mjs', 'test/hooks.mjs', 'test/release.mjs']) {
+    const first = readFileSync(join(ROOT, f), 'utf8').split('\n').find((l) => l.startsWith('import '));
+    expect(first === "import './git-env.mjs';", `${f}: first import is "${first}", expected "import './git-env.mjs';"`);
+  }
 });
 
 const only = process.argv[2];
