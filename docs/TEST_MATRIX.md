@@ -126,11 +126,11 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-UPD-4 | apply with overlapping edits exits 2, writes nothing to the live file, stages base/local/incoming/resolved under .loops/update/; --continue refuses while markers remain and applies once resolved; --abort removes the staging dir | `unit` | ✅ |
 | T-UPD-5 | a mixed file gets only its LOOPS:BEGIN/END block merged and the bytes outside the markers are byte-identical afterwards; a seeded file is never read or written | `unit` | ✅ |
 | T-UPD-6 | a path listed in manifest.frozen is skipped by apply and not reported by status; loops-check notes a managed file whose sha differs from its base and a manifest version that differs from LOOPS_VERSION | `unit` | ✅ |
-| T-UPD-9 | a mixed file with two blocks changed upstream, one conflicting locally, stages the conflicting block and carries the clean one; after --continue both upstream changes are in the file | `unit` | ☐ → ST-015 |
-| T-UPD-10 | a managed file with no stored base whose local text differs from upstream is staged as a conflict, never reported unchanged | `unit` | ☐ → ST-015 |
-| T-UPD-11 | init on a repo whose files already exist records a base only for files byte-equal to the template; the next apply stages every other differing file | `unit` | ☐ → ST-015 |
-| T-UPD-12 | every file listed as mixed in loops-install-files.txt has at least one LOOPS:BEGIN block in template/ | `unit` | ☐ → ST-015 |
-| T-UPD-13 | apply with no managed file to touch succeeds while an unrelated file is dirty | `unit` | ☐ → ST-015 |
+| T-UPD-9 | a mixed file with two blocks changed upstream, one conflicting locally, stages the conflicting block and carries the clean one; after --continue both upstream changes are in the file | `unit` | ✅ |
+| T-UPD-10 | a managed file with no stored base whose local text differs from upstream is staged as a conflict, never reported unchanged | `unit` | ✅ |
+| T-UPD-11 | init on a repo whose files already exist records a base only for files byte-equal to the template; the next apply stages every other differing file | `unit` | ✅ |
+| T-UPD-12 | every file listed as mixed in loops-install-files.txt has at least one LOOPS:BEGIN block in template/ | `unit` | ✅ |
+| T-UPD-13 | apply with no managed file to touch succeeds while an unrelated file is dirty | `unit` | ✅ |
 <!-- LOOPS:GEN-END test-matrix -->
 
 ## Behaviors without an owning story

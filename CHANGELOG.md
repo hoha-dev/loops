@@ -4,6 +4,12 @@ All notable changes to loops are recorded here. Versions follow [Semantic Versio
 
 The first entry's version must equal the plugin version (`.claude-plugin/plugin.json`), the `LOOPS_VERSION` stamp in `docs/LOOP.md` and the version in `.loops/manifest.json`; `test/release.mjs` fails when they disagree. A consuming repo sees the version it runs in `.loops/manifest.json` after `/loops:update`.
 
+## [0.2.6] — 2026-10-26
+
+- `loops-update` no longer drops an upstream change. A mixed file with several changed blocks stages every conflicting block and carries the clean ones through `--continue` (T-UPD-9). A managed file or block with no stored base that differs from upstream is staged as a conflict with an empty base side instead of being kept as it is (T-UPD-10). `init` over files that already exist records a base only for files equal to the template, and `status` names the files left without one (T-UPD-11). `apply` with nothing to touch no longer refuses because of an unrelated dirty file (T-UPD-13).
+- `REVIEW.md` carries two harness-owned blocks, `passes` and `output`, so `/loops:update` can reach it; every file listed as `mixed` must have a block (T-UPD-12).
+- `/loops:update` Step 0a describes what happens to a repo installed before v0.2.
+
 ## [0.2.5] — 2026-10-26
 
 - `/loops:init` rewrites the foundation checklist in `docs/LOOP.md` from the repo's SAD and ADRs, and checks that no shipped web-app example line is left behind (ST-014, T-SKL-12).

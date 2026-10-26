@@ -29,7 +29,7 @@ node scripts/loops-update.mjs status --plugin "${CLAUDE_PLUGIN_ROOT}"
 
 ## Step 0a — A repo installed before v0.2 (no `.loops/`)
 
-`status` says `no .loops/manifest.json`. There is no base, so the first update is a two-way comparison: run `init` against the plugin version the repo is on if that checkout is at hand (`git -C <plugin> checkout v<LOOPS_VERSION>` or the matching commit, then `node scripts/loops-update.mjs init --plugin <that checkout>`); otherwise run `init` against the current plugin and tell the user plainly that every local edit will show as a conflict against upstream on this one update. Commit `.loops/` before Step 1.
+`status` says `no .loops/manifest.json`. There is no base yet. Run `init` against the plugin version the repo is on if that checkout is at hand (`git -C <plugin> checkout v<LOOPS_VERSION>` or the matching commit, then `node scripts/loops-update.mjs init --plugin <that checkout>`): every file then gets its real base and Step 1 is an ordinary three-way merge. Otherwise run `init` against the current plugin: it records a base only for the files that are byte-equal to the template (for a mixed file, its LOOPS blocks) and names the others; `status` then says how many files have no base, and Step 1 stages each of them as a conflict with an empty base side, so the person sees the repo's whole text against upstream and decides. Tell the user plainly how many files that is before Step 1. Commit `.loops/` before Step 1.
 
 ## Step 0b — A repo on the predecessor harness: migrate the names first
 
