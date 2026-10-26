@@ -1,0 +1,29 @@
+# loops gates for GitLab CI. Merge into .gitlab-ci.yml (or `include:` this file).
+# `contract` runs the doc contract on every push; `evals` runs the agent-configuration evals only when
+# the configuration changed or on a schedule (a pipeline schedule with EVALS=1). No `allow_failure`:
+# a gate that may fail without consequence is not a gate (AGENTS.md guardrail, LESSONS L16).
+# Needs ANTHROPIC_API_KEY as a masked CI variable for the evals job.
+stages: [contract, evals]
+
+contract:
+  stage: contract
+  image: node:24
+  variables:
+    GIT_DEPTH: 0                      # loops-check reads branches (story/* claims) and main
+  script:
+    - node scripts/loops-gen.mjs --check
+    - node scripts/loops-check.mjs
+
+evals:
+  stage: evals
+  image: node:24
+  rules:
+    - if: '$EVALS == "1"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes: [CLAUDE.md, AGENTS.md, REVIEW.md, ".claude/**/*", "skills/**/*", "evals/**/*"]
+  script:
+    - npm install -g @anthropic-ai/claude-code
+    - bash evals/run.sh
+  artifacts:
+    paths: [evals/last-run.md]
+    when: always

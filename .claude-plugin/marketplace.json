@@ -1,0 +1,13 @@
+{
+  "name": "loops",
+  "owner": {
+    "name": "Trung Nguyen"
+  },
+  "plugins": [
+    {
+      "name": "loops",
+      "source": "./",
+      "description": "The AI-native SDLC loop as a repo template + Claude Code skills: intent → spec → story packets with machine-checked Ready/Done → parallel sessions with owns-based isolation → hooks that enforce the boundaries → review → the loop restarts from what production reports. Skills: /loops:intent, spec, next, wave, start, land, review, init, update, improve."
+    }
+  ]
+}

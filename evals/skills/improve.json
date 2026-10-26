@@ -1,0 +1,20 @@
+{
+  "skill": "improve",
+  "phrasings": [
+    "The owns-guard hook did not block an edit yesterday; improve the harness.",
+    "Cải tiến harness: agent sửa file ngoài owns mà không bị chặn.",
+    "Turn this failure into a harness change: stage-guard let `git add .` through."
+  ],
+  "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep"
+  ],
+  "expect": {
+    "contains": [
+      "claim"
+    ],
+    "not_error": true,
+    "max_cost_usd": 3
+  }
+}

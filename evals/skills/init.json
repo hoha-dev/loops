@@ -1,0 +1,20 @@
+{
+  "skill": "init",
+  "phrasings": [
+    "Set up loops in this repo.",
+    "Init the harness here.",
+    "Áp loops vào repo này."
+  ],
+  "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep"
+  ],
+  "expect": {
+    "contains": [
+      "loops-check"
+    ],
+    "not_error": true,
+    "max_cost_usd": 3
+  }
+}

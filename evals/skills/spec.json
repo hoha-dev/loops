@@ -1,0 +1,21 @@
+{
+  "skill": "spec",
+  "phrasings": [
+    "Write the spec from INT-001.",
+    "Requirements and design for INT-001, please.",
+    "Viết spec cho INT-001."
+  ],
+  "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Write"
+  ],
+  "expect": {
+    "contains": [
+      "docs/specs/SPEC-"
+    ],
+    "not_error": true,
+    "max_cost_usd": 3
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "version": "0.2.3",
+  "installed": "2026-10-15",
+  "frozen": [
+    "scripts/loops-check.mjs",
+    "scripts/loops-gen.mjs",
+    "scripts/loops-update.mjs",
+    ".claude/hooks/lib.mjs",
+    ".claude/hooks/owns-guard.mjs",
+    ".claude/hooks/stage-guard.mjs",
+    ".claude/hooks/generated-guard.mjs",
+    ".claude/hooks/adr-guard.mjs",
+    ".claude/hooks/fix-guard.mjs"
+  ],
+  "files": {
+    "docs/templates/intent.md": {
+      "kind": "managed",
+      "sha256": "1b93236b50dc307dc4fc3281daa8557bae8ed6453b4fa4340dff6c029e5642c4"
+    },
+    "docs/templates/spec.md": {
+      "kind": "managed",
+      "sha256": "ba4a90f2db24f808cdb93aac56c1bae9c3ecd66ba5ed5d271bc16ceb97626c4e"
+    },
+    "docs/templates/story.md": {
+      "kind": "managed",
+      "sha256": "ec31dd29dfda537f5edc785c8ab698a9ab86ca41734dc316b4128b777531a717"
+    },
+    "docs/templates/decision.md": {
+      "kind": "managed",
+      "sha256": "af97d3b9fd5559bc483b7d35e0f36f474cfb9c921c020afcc9a4531df0236f63"
+    },
+    "docs/templates/review.md": {
+      "kind": "managed",
+      "sha256": "de6c062139fff4d274d52a51072e265dcdd463a134d9323a352519ed96c09ffd"
+    },
+    "docs/templates/runbook.md": {
+      "kind": "managed",
+      "sha256": "9e8ce4e0aa18c97559c275e9e1ca10957850136c8c41ac1ff73ce9cdeff2da26"
+    },
+    "docs/templates/improvement.md": {
+      "kind": "managed",
+      "sha256": "b2508d61c7ae81bb89c4b0634846d88b4f5391884247ba5435bec11bdc9b3f9c"
+    },
+    "scripts/loops-check.mjs": {
+      "kind": "managed",
+      "sha256": "c151f16e559c241622d1f3eca0e0df05d836f2def077cf8ed0a178e0a6c76796"
+    },
+    "scripts/loops-gen.mjs": {
+      "kind": "managed",
+      "sha256": "a646b8e6774b82fc876df624a6ac86f33db5434b256828c4c9a895cea4a476af"
+    },
+    "scripts/loops-update.mjs": {
+      "kind": "managed",
+      "sha256": "62948a03995a0334a7beb5e70cef45bec7914e04cd776ba8d89a0e0d41f1ef58"
+    },
+    ".claude/settings.json": {
+      "kind": "managed",
+      "sha256": "11628624de698de31e49c160a07eb31cba257b7116998f0f62536dd0870fcb61"
+    },
+    ".claude/hooks/lib.mjs": {
+      "kind": "managed",
+      "sha256": "d26c09aea14183b9d558698a9c5acf9cf7249f24c5d38e4b14e24c17a23f9027"
+    },
+    ".claude/hooks/owns-guard.mjs": {
+      "kind": "managed",
+      "sha256": "7624236a93aef8754e994e8295913ff22c1d690443cdb320bf90837874e5c22b"
+    },
+    ".claude/hooks/stage-guard.mjs": {
+      "kind": "managed",
+      "sha256": "53f49ff1aafc8729d7fe2f72b10f50b745f3e451c8b0f5abb8390199ea37e21e"
+    },
+    ".claude/hooks/generated-guard.mjs": {
+      "kind": "managed",
+      "sha256": "3c952e9d74d418c6394c0a3542730e53bc36422f6f6006831eea7f8b5f3a36b3"
+    },
+    ".claude/hooks/adr-guard.mjs": {
+      "kind": "managed",
+      "sha256": "4e61ab6e2f5fe363dc8829729616e43ef079b9ec94b9d666140caed1839c116c"
+    },
+    ".claude/hooks/fix-guard.mjs": {
+      "kind": "managed",
+      "sha256": "d0f52a5788db78b7aba4020d62d728e77ccb5002c4a28892ee81d30490bb4fee"
+    },
+    ".claude/agents/verifier.md": {
+      "kind": "managed",
+      "sha256": "85001120a008c8b82eb556257913024154423aaa7a150bfd426b6573d04ff35e"
+    },
+    ".claude/agents/reviewer.md": {
+      "kind": "managed",
+      "sha256": "9b631616dff5dd47825e30be58a25f95f756513b39d5232c84904b042342df12"
+    },
+    "evals/check.mjs": {
+      "kind": "managed",
+      "sha256": "050971dd13843fb41edbe4ba069278e7ef35a9fa6993a9f8995ebf007ed44d78"
+    },
+    "evals/run.sh": {
+      "kind": "managed",
+      "sha256": "153ee22cb670ae9dab933a04098699c0ee74e2c75c87c0543e94821165b002b0"
+    },
+    "REVIEW.md": {
+      "kind": "mixed",
+      "sha256": "6e4299ba36955d5b00a2d69bfd0f8cf6de8181cc624ea7d6cf8e37c51c632317"
+    },
+    "AGENTS.md": {
+      "kind": "mixed",
+      "sha256": "042b440d289f84fe19167ee0d51f582c65d23b849cc4b0313937e4e3221e99c3"
+    },
+    "docs/FEATURE_INTAKE.md": {
+      "kind": "mixed",
+      "sha256": "4ed5764bd4494aa5247782c94862d733b5cff1c7eb573885a2cf78e22e7eb858"
+    },
+    "docs/LOOP.md": {
+      "kind": "mixed",
+      "sha256": "844c516ced9de5c745ab1cf807363da4a23ac22a95878a348cfb855ff23e3265"
+    }
+  }
+}

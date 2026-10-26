@@ -1,0 +1,22 @@
+{
+  "skill": "sync",
+  "phrasings": [
+    "The PO decided: specs are accepted by one person. Propagate it through the docs.",
+    "Chốt rồi, cập nhật tài liệu: ADR-0004 accepted.",
+    "Sync the docs with the decision that hooks are the deterministic layer."
+  ],
+  "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Bash(node scripts/*)"
+  ],
+  "expect": {
+    "contains": [
+      "**Decision:**"
+    ],
+    "not_error": true,
+    "max_cost_usd": 3
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "skill": "update",
+  "phrasings": [
+    "Update the installed loops files to the current plugin version.",
+    "Diff this repo's harness files against the template and propose the update.",
+    "Cập nhật harness lên version plugin hiện tại."
+  ],
+  "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Bash(node scripts/*)"
+  ],
+  "expect": {
+    "contains": [
+      "loops-install-files.txt"
+    ],
+    "not_error": true,
+    "max_cost_usd": 3
+  }
+}

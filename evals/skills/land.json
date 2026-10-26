@@ -1,0 +1,22 @@
+{
+  "skill": "land",
+  "phrasings": [
+    "Land ST-007.",
+    "Close out story ST-007 and prepare the PR description.",
+    "Xong ST-007, mở PR."
+  ],
+  "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Bash(node *)",
+    "Bash(git *)"
+  ],
+  "expect": {
+    "contains": [
+      "Proof turned"
+    ],
+    "not_error": true,
+    "max_cost_usd": 3
+  }
+}

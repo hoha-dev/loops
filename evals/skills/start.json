@@ -1,0 +1,23 @@
+{
+  "skill": "start",
+  "phrasings": [
+    "Start ST-007.",
+    "Begin work on story ST-007 in its own worktree.",
+    "Bắt đầu ST-007."
+  ],
+  "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Bash(node scripts/*)",
+    "Bash(git *)"
+  ],
+  "expect": {
+    "contains": [
+      "Working on ST-007",
+      ".worktrees/st-007"
+    ],
+    "not_error": true,
+    "max_cost_usd": 3
+  }
+}

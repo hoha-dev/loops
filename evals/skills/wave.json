@@ -1,0 +1,22 @@
+{
+  "skill": "wave",
+  "phrasings": [
+    "What can run in parallel right now?",
+    "Compute the wave: which stories can start at the same time?",
+    "Chạy song song được gì bây giờ?"
+  ],
+  "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Bash(node scripts/*)",
+    "Bash(git *)"
+  ],
+  "expect": {
+    "contains": [
+      "## Wave"
+    ],
+    "not_error": true,
+    "max_cost_usd": 3
+  }
+}

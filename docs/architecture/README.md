@@ -1,0 +1,7 @@
+# docs/architecture — Detailed technical design
+
+> The detail behind the index [`../ARCHITECTURE.md`](../ARCHITECTURE.md). Durable decisions live in [`../decisions/`](../decisions/README.md) — documents here describe the *current shape*, ADRs record the *why*.
+
+| Document | Role |
+| -------- | ---- |
+| DESIGN.md | SAD: containers, data, key flows, infrastructure |

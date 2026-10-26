@@ -1,0 +1,56 @@
+# loops — payload manifest (source of truth for /loops:init and /loops:update)
+#
+# managed : owned by loops — update may replace the whole file (slots {{...}} re-filled from the repo).
+# mixed   : ONLY the blocks between <!-- LOOPS:BEGIN <name> --> ... <!-- LOOPS:END <name> --> belong to
+#           loops; the rest belongs to the repo and update never touches it.
+# seeded  : generated ONCE by /loops:init, then owned by the repo — update never touches it.
+# Skills are never copied into a repo (ADR-0003); they come from the plugin.
+# The update itself is `node scripts/loops-update.mjs apply --plugin <dir>`: a three-way merge of each
+# managed file (and each marker block of a mixed file) over the base recorded in .loops/ at install
+# time; conflicts are staged under .loops/update/, never written into the tree (ADR-0005). A repo may
+# list a path under "frozen" in .loops/manifest.json to keep its own version of a managed file.
+
+managed  docs/templates/intent.md
+managed  docs/templates/spec.md
+managed  docs/templates/story.md
+managed  docs/templates/decision.md
+managed  docs/templates/review.md
+managed  docs/templates/runbook.md
+managed  docs/templates/improvement.md    # one snapshot per /loops:improve experiment, in docs/reviews/
+managed  scripts/loops-check.mjs
+managed  scripts/loops-gen.mjs
+managed  scripts/loops-update.mjs        # the updater (ADR-0005); its data .loops/manifest.json + .loops/base/ are committed by the repo
+managed  .claude/settings.json          # hooks block; a repo with its own settings.json merges the hooks block
+managed  .claude/hooks/lib.mjs
+managed  .claude/hooks/owns-guard.mjs
+managed  .claude/hooks/stage-guard.mjs
+managed  .claude/hooks/generated-guard.mjs
+managed  .claude/hooks/adr-guard.mjs
+managed  .claude/hooks/fix-guard.mjs
+managed  .claude/agents/verifier.md
+managed  .claude/agents/reviewer.md
+managed  evals/check.mjs
+managed  evals/run.sh
+seeded   evals/README.md
+seeded   evals/skills/next.json           # example; the repo adds its own cases
+seeded   ci/github-loops.yml               # copy to .github/workflows/ or merge into .gitlab-ci.yml
+seeded   ci/gitlab-ci.yml
+mixed    REVIEW.md                    # the "Do not report" list of generated paths is the repo's
+
+mixed    AGENTS.md                    # blocks: reading-order, guardrails
+mixed    docs/FEATURE_INTAKE.md       # block: authority
+mixed    docs/LOOP.md                 # blocks: core, rituals — the foundation checklist between them is the repo's
+
+seeded   CLAUDE.md
+seeded   docs/README.md
+seeded   docs/ARCHITECTURE.md
+seeded   docs/TEST_MATRIX.md            # LOOPS:GEN test-matrix block is written by loops-gen
+seeded   docs/intents/README.md
+seeded   docs/specs/README.md
+seeded   docs/product/README.md
+seeded   docs/architecture/README.md
+seeded   docs/decisions/README.md
+seeded   docs/decisions/OPEN.md         # the queue; rows belong to the repo
+seeded   docs/stories/README.md         # LOOPS:GEN backlog block is written by loops-gen, not by /loops:update
+seeded   docs/reviews/README.md
+seeded   .gitattributes

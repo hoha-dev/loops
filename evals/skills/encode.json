@@ -1,0 +1,23 @@
+{
+  "skill": "encode",
+  "phrasings": [
+    "Encode the boundary behind ADR-0003 as a check.",
+    "loops-check says ADR-0003 has no Enforced by line — make that boundary mechanical.",
+    "Biến rule 'skills chỉ cài qua plugin' thành check có proof âm."
+  ],
+  "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Bash(node scripts/*)",
+    "Bash(node test/*)"
+  ],
+  "expect": {
+    "contains": [
+      "Authority",
+      "negative"
+    ],
+    "not_error": true,
+    "max_cost_usd": 4
+  }
+}

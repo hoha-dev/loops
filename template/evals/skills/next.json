@@ -1,0 +1,22 @@
+{
+  "skill": "next",
+  "phrasings": [
+    "What should I work on next?",
+    "Where does the project stand, what is next?",
+    "Làm gì tiếp theo?"
+  ],
+  "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Bash(node scripts/*)",
+    "Bash(git log *)"
+  ],
+  "expect": {
+    "contains": [
+      "Recommended next"
+    ],
+    "not_error": true,
+    "max_cost_usd": 3
+  }
+}

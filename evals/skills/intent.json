@@ -1,0 +1,21 @@
+{
+  "skill": "intent",
+  "phrasings": [
+    "I have an idea: a weekly digest email for users. Capture it as an intent, do not build anything.",
+    "Let's think through adding a weekly digest email — write the intent file.",
+    "Tôi có ý tưởng gửi email tổng hợp hàng tuần cho user, ghi lại ý định trước đã, chưa làm gì."
+  ],
+  "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Write"
+  ],
+  "expect": {
+    "contains": [
+      "docs/intents/INT-"
+    ],
+    "not_error": true,
+    "max_cost_usd": 3
+  }
+}

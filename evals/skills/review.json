@@ -1,0 +1,23 @@
+{
+  "skill": "review",
+  "phrasings": [
+    "Review the project at this milestone.",
+    "Do the milestone cross-review and leave the snapshot.",
+    "Review kỹ thuật dự án, nhìn lại milestone này."
+  ],
+  "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Bash(node *)",
+    "Bash(git *)",
+    "Write"
+  ],
+  "expect": {
+    "contains": [
+      "docs/reviews/"
+    ],
+    "not_error": true,
+    "max_cost_usd": 3
+  }
+}

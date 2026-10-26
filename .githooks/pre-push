@@ -1,0 +1,3 @@
+#!/bin/sh
+# Before every push of the loops repo: fixture tests of the shipped scripts and hooks, then the repo's own doc contract.
+node test/run.mjs && node test/hooks.mjs && node test/evals.mjs && node test/update.mjs && node test/release.mjs --fixtures && node test/release.mjs && node scripts/loops-gen.mjs --check && node scripts/loops-check.mjs
