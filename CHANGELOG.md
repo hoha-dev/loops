@@ -4,6 +4,10 @@ All notable changes to loops are recorded here. Versions follow [Semantic Versio
 
 The first entry's version must equal the plugin version (`.claude-plugin/plugin.json`), the `LOOPS_VERSION` stamp in `docs/LOOP.md` and the version in `.loops/manifest.json`; `test/release.mjs` fails when they disagree. A consuming repo sees the version it runs in `.loops/manifest.json` after `/loops:update`.
 
+## [0.2.5] — 2026-10-26
+
+- `/loops:init` rewrites the foundation checklist in `docs/LOOP.md` from the repo's SAD and ADRs, and checks that no shipped web-app example line is left behind (ST-014, T-SKL-12).
+
 ## [0.2.4] — 2026-10-26
 
 - `loops-check` 5b notes only ADRs named on a boundary line (`→ ADR-nnnn`); a citation such as "Source: ADR-0001" under Stack no longer reads as a boundary. An AGENTS.md without any arrow line keeps the old behaviour (ST-013, T-ENF-3).

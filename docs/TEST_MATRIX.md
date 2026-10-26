@@ -103,6 +103,7 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-SKL-9 | skills/encode/SKILL.md walks authority → boundary table → smallest check → positive and negative proof → Enforced by line → four levels; evals/skills/encode.json has three phrasings | `manual` | ✅ |
 | T-SKL-10 | docs/templates/improvement.md has the fields representative job · baseline · earliest gap (one of six kinds) · owner · hypothesis "If X at Y then a fresh agent will Z because M" · evidence that would weaken it · maintenance owner and removal condition · fresh rerun · verdict; /loops:improve writes docs/reviews/YYYY-MM-DD-improve-<slug>.md from it and adds the LESSONS entry only on Keep | `manual` | ✅ |
 | T-SKL-11 | skills/init/SKILL.md names one English template, no Vietnamese canonical tree and no mirror | `manual` | ✅ |
+| T-SKL-12 | skills/init/SKILL.md Step 3 rewrites "This repo's foundation checklist" in docs/LOOP.md from the SAD and the ADRs it generated, one seam per line with its ADR, and Step 4 checks that none of the shipped example lines is left | `manual` | ✅ |
 
 ### UPD
 
