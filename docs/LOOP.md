@@ -1,6 +1,6 @@
 # LOOP.md — Human ⇄ Agent collaboration model for loops
 
-> This repo applies the **harness pattern** (loops v0.2.3). Core idea: _an agent doesn't just need a good prompt — it needs a repo with enough context before touching code._
+> This repo applies the **harness pattern** (loops v0.2.4). Core idea: _an agent doesn't just need a good prompt — it needs a repo with enough context before touching code._
 
 <!-- LOOPS:BEGIN core (harness-owned block — /loops:update may replace it) -->
 ## Why this layer exists

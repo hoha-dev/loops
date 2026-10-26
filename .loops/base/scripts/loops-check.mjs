@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // loops doc-contract check. Run from the repo root: `node scripts/loops-check.mjs`.
 // Output is English regardless of the docs language: it is a log, read next to other tool output.
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import {
   loadStories, loadOpens, evaluate, ownershipConflicts, waitingOnActive, loadClaims, isActive, generate,
@@ -62,19 +62,25 @@ if (existsSync('AGENTS.md')) {
   if (lines > 120) failures.push(`AGENTS.md: ${lines} lines > 120 budget — move detail into docs/`);
 }
 
-// 5. Every ADR referenced from an AGENTS.md boundary has a real file.
+// 5. Every ADR referenced from AGENTS.md has a real file.
 const adrFiles = existsSync('docs/decisions') ? readdirSync('docs/decisions') : [];
 const adrExists = (id) => adrFiles.some((f) => f.startsWith(`ADR-${id}`));
 if (existsSync('AGENTS.md') && existsSync('docs/decisions')) {
-  const ids = new Set([...read('AGENTS.md').matchAll(/ADR-(\d{4})/g)].map((m) => m[1]));
+  const agents = read('AGENTS.md');
+  const ids = new Set([...agents.matchAll(/ADR-(\d{4})/g)].map((m) => m[1]));
   for (const id of ids) {
     if (!adrExists(id))
       failures.push(`AGENTS.md references ADR-${id} but docs/decisions/ADR-${id}-*.md does not exist`);
   }
   // 5b. A boundary's ADR says what enforces it (ADR-0006). A note, not a failure (OPEN-003): the rule
   //     still holds as prose, and a consumer must not turn red on the version bump.
+  //     A boundary is a line ending in "→ ADR-nnnn" (template/AGENTS.md convention); "Source: ADR-0001"
+  //     under Stack is a citation, not a boundary. The section heading is not used: it belongs to the
+  //     repo and may be in its own language. No arrow line at all → every reference counts.
+  const arrowIds = new Set([...agents.matchAll(/→\s*ADR-(\d{4})/g)].map((m) => m[1]));
+  const boundaryIds = arrowIds.size ? arrowIds : ids;
   const adrMeta = loadAdrs('.');
-  for (const id of ids) {
+  for (const id of boundaryIds) {
     const a = adrMeta.get(`ADR-${id}`);
     if (a && !a.enforcedBy)
       notes.push(`ADR-${id} backs an AGENTS.md boundary but has no "- **Enforced by:**" line — the boundary holds only as prose until /loops:encode adds a check (see docs/templates/decision.md)`);
@@ -350,6 +356,27 @@ if (existsSync('docs/TEST_MATRIX.md') && existsSync(STORY_DIR)) {
     if (!hits.length) continue;
     if (d === '.githooks' && norm(hooksPath) !== '.githooks') {
       notes.push(`${hits.join(', ')} calls loops-check, but git does not run it: core.hooksPath is ${hooksPath ? `"${hooksPath}"` : 'not set'} — run "git config core.hooksPath .githooks" in each clone`);
+      continue;
+    }
+    if (d === '.githooks') {
+      // git on macOS/Linux skips a hook without the executable bit; on Windows it runs whatever the mode,
+      // so there only the committed mode tells whether other clones will run it. .husky/ is not checked:
+      // husky runs its files through sh.
+      for (const f of hits) {
+        if (process.platform !== 'win32' && !(statSync(f).mode & 0o111)) {
+          notes.push(`${f} calls loops-check, but git does not run it: the file is not executable — run "chmod +x ${f} && git update-index --chmod=+x ${f}" and commit`);
+          continue;
+        }
+        let mode = '';
+        try {
+          mode = execSync(`git ls-files -s -- "${f}"`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).split(/\s/)[0];
+        } catch {
+          // no git: nothing committed to compare
+        }
+        if (mode === '100644')
+          notes.push(`${f} is committed without the executable bit (mode 100644): clones on macOS/Linux will not run it — run "git update-index --chmod=+x ${f}" and commit`);
+        invokers.push(f);
+      }
       continue;
     }
     invokers.push(...hits);

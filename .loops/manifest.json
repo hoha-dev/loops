@@ -1,6 +1,6 @@
 {
-  "version": "0.2.3",
-  "installed": "2026-10-15",
+  "version": "0.2.4",
+  "installed": "2026-10-26",
   "frozen": [
     "scripts/loops-check.mjs",
     "scripts/loops-gen.mjs",
@@ -43,7 +43,7 @@
     },
     "scripts/loops-check.mjs": {
       "kind": "managed",
-      "sha256": "c151f16e559c241622d1f3eca0e0df05d836f2def077cf8ed0a178e0a6c76796"
+      "sha256": "473fb910f0f203b96e0aab5a93ec32d8fdc28cce073720f84d56ec16eab41970"
     },
     "scripts/loops-gen.mjs": {
       "kind": "managed",
