@@ -3,7 +3,7 @@ id: ST-015
 title: loops-update never drops an upstream change — every conflicting block staged, base-less files shown as conflicts, REVIEW.md carries a block
 trace: ADR-0005 points 1-3 · docs/reviews/2026-10-26-v0.2-review.md F1 F2 F3 F8
 class: high-risk
-status: ready
+status: in-progress
 depends_on: []
 consumes: []
 owns: [template/scripts/loops-update.mjs, test/update.mjs, skills/update/SKILL.md, loops-install-files.txt, template/REVIEW.md, REVIEW.md, CHANGELOG.md, .claude-plugin/plugin.json, docs/LOOP.md, .loops/**]
