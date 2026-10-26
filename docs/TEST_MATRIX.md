@@ -74,7 +74,6 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-HOOK-7 | owns-guard on branch story/ST-019 allows a Write of a new docs/decisions/ADR-0003-x.md and an Edit of docs/decisions/OPEN.md, and blocks an Edit of the existing Proposed docs/decisions/ADR-0002-x.md | `unit` | ✅ |
 | T-HOOK-8 | adr-guard allows an Edit whose old_string is the "Enforced by" line of an Accepted ADR and still blocks a body edit | `unit` | ✅ |
 | T-HOOK-9 | stage-guard allows git add -A on main and outside any repo, and blocks it on a story/ST-xxx branch | `unit` | ☐ → ST-016 |
-| T-HOOK-9 | stage-guard allows git add -A on main and outside any repo, and blocks it on a story/ST-xxx branch | `unit` | ☐ → ST-019 |
 
 ### ISO
 
@@ -116,7 +115,6 @@ The domain code is the middle segment of the ID (`T-<DOM>-n`). Spell out codes h
 | T-SKL-11 | skills/init/SKILL.md names one English template, no Vietnamese canonical tree and no mirror | `manual` | ✅ |
 | T-SKL-12 | skills/init/SKILL.md Step 3 rewrites "This repo's foundation checklist" in docs/LOOP.md from the SAD and the ADRs it generated, one seam per line with its ADR, and Step 4 checks that none of the shipped example lines is left | `manual` | ✅ |
 | T-SKL-13 | skills/start/SKILL.md says the claim is visible to other clones once the start commit is pushed, not when the empty branch is pushed | `manual` | ☐ → ST-016 |
-| T-SKL-13 | skills/start/SKILL.md says the claim is visible to other clones once the start commit is pushed, not when the empty branch is pushed | `manual` | ☐ → ST-019 |
 | T-SKL-14 | skills/land/SKILL.md Step 5 runs the review through the reviewer subagent on a saved diff, with no claude -p call and no ANTHROPIC_API_KEY, and the lead opens each line before calling a finding CONFIRMED | `manual` | ☐ → ST-019 |
 
 ### UPD

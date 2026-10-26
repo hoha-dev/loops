@@ -16,8 +16,6 @@ proof:
   - T-UPD-17 | unit | with no stored base, an upstream that empties a file or block is a conflict, not a silent keep | ☐
   - T-UPD-18 | unit | a mixed file checked out with CRLF line endings has its blocks found and merged | ☐
   - T-UPD-19 | unit | status does not count a manifest path the plugin template does not ship as a file without a base | ☐
-  - T-HOOK-9 | unit | stage-guard allows git add -A on main and outside any repo, and blocks it on a story/ST-xxx branch | ☐
-  - T-SKL-13 | manual | skills/start/SKILL.md says the claim is visible to other clones once the start commit is pushed, not when the empty branch is pushed | ☐
   - T-SKL-14 | manual | skills/land/SKILL.md Step 5 runs the review through the reviewer subagent on a saved diff, with no claude -p call and no ANTHROPIC_API_KEY, and the lead opens each line before calling a finding CONFIRMED | ☐
 ---
 
@@ -36,7 +34,7 @@ Finish v0.2 before consumers update: the independent review of PR #2 found two d
 - **Fresh install vs migration (review Important 2):** `init` records the template as base for every file, as before 0.2.6, so a file `/loops:init` merged into (an existing `.claude/settings.json`) keeps a base. `init --migrate` is the 0.2.6 behaviour for a repo installed before v0.2: no base for a file that differs from the template. `/loops:update` Step 0a passes `--migrate`.
 - Re-running `init` keeps the stored base of every path already in the manifest. With no base, `local ≠ upstream` is always a conflict, including an upstream that empties the text. `BLOCK_RE` accepts CRLF. `status` counts only paths the template ships.
 - `REVIEW.md`: "What Important means" and "Cap the nits" move outside the harness blocks, since the monthly tuning edits them; blocks become `passes`, `labels`, `output`.
-- **ST-016:** `stage-guard` returns unless the branch is `story/ST-xxx`; `/loops:start` Steps 2–3 say the claim becomes visible with the pushed start commit. ST-016 is closed as done in this PR.
+- **ST-016, landed here:** `stage-guard` returns unless the branch is `story/ST-xxx`; `/loops:start` Steps 2–3 say the claim becomes visible with the pushed start commit. Its proofs T-HOOK-9 and T-SKL-13 stay in ST-016's packet and turn ✅ in this PR, which sets ST-016 to done.
 - **Land review without an API key:** `/loops:land` Step 5 saves the diff and hands it, with `REVIEW.md`, the story and its ADRs, to the `reviewer` subagent (fresh context, Read/Grep/Glob). The lead opens every line before CONFIRMED. `REVIEW.md`, `reviewer.md`, `docs/LOOP.md`, README, WORKFLOW and T-SKL-5 describe that.
 - Version 0.2.7.
 
