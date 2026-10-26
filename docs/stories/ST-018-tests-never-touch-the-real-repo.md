@@ -3,7 +3,7 @@ id: ST-018
 title: Fixture tests never write to the real repo, even when pre-push runs from a linked worktree
 trace: AGENTS.md "Common commands" (pre-push runs the full set) · incident 2026-10-26 during /loops:start ST-015
 class: normal
-status: in-progress
+status: done
 depends_on: []
 consumes: []
 owns: [.githooks/pre-push, test/git-env.mjs, test/run.mjs, test/hooks.mjs, test/release.mjs, LESSONS.md]
@@ -40,5 +40,5 @@ ADR-0002: the pre-push hook is how this repo runs its own shipped checks on itse
 ## Story-closing checklist
 
 - [x] T-ISO-1's negative control fails without the fix (say so in the PR).
-- [ ] A real `git push` of the story branch from `.worktrees/st-018` passes the hook and leaves `main`, `.git/config` and `git worktree list` unchanged.
+- [x] A real `git push` of the story branch from `.worktrees/st-018` passes the hook and leaves `main`, `.git/config` and `git worktree list` unchanged.
 - [x] All `proof` rows ✅; `node scripts/loops-gen.mjs`; `node scripts/loops-check.mjs` OK; full pre-push set green.
