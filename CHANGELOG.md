@@ -4,6 +4,15 @@ All notable changes to loops are recorded here. Versions follow [Semantic Versio
 
 The first entry's version must equal the plugin version (`.claude-plugin/plugin.json`), the `LOOPS_VERSION` stamp in `docs/LOOP.md` and the version in `.loops/manifest.json`; `test/release.mjs` fails when they disagree. A consuming repo sees the version it runs in `.loops/manifest.json` after `/loops:update`.
 
+## [0.2.7] — 2026-10-26
+
+- `loops-update apply` stops before staging when a mixed file lacks a block's markers (a `REVIEW.md` from 0.2.5 or earlier), names the template file to copy the block from, and says "commit, then re-run apply"; 0.2.6 staged it, after which neither `--continue` nor `apply` could proceed (T-UPD-14).
+- `init` records the template as the base of every file again, including a file `/loops:init` merged into, such as an existing `.claude/settings.json`; `init --migrate` keeps 0.2.6's no-base rule for a repo installed before v0.2, and `/loops:update` Step 0a uses it (T-UPD-15). Re-running `init` keeps every stored base (T-UPD-16).
+- With no stored base, any difference from upstream is a conflict, including an upstream that empties the text (T-UPD-17). Mixed files checked out with CRLF are merged and keep CRLF (T-UPD-18). `status` counts only paths the template ships (T-UPD-19).
+- `REVIEW.md` keeps its two blocks; its intro and output heading describe the subagent review, and the tuning paragraph says tuned lines are merged three-way.
+- `stage-guard` applies on a `story/ST-xxx` branch only, judged from the directory the command targets (`git -C`, a leading `cd`) and through a rebase (T-HOOK-9, T-HOOK-10). `/loops:start` says the claim becomes visible with the pushed start commit (T-SKL-13).
+- `/loops:land` Step 5 reviews the diff through the `reviewer` subagent: no `claude -p` call and no `ANTHROPIC_API_KEY` (T-SKL-14).
+
 ## [0.2.6] — 2026-10-26
 
 - `loops-update` no longer drops an upstream change. A mixed file with several changed blocks stages every conflicting block and carries the clean ones through `--continue` (T-UPD-9). A managed file or block with no stored base that differs from upstream is staged as a conflict with an empty base side instead of being kept as it is (T-UPD-10). `init` over files that already exist records a base only for files equal to the template, and `status` names the files left without one (T-UPD-11). `apply` with nothing to touch no longer refuses because of an unrelated dirty file (T-UPD-13).

@@ -1,6 +1,6 @@
 # Review instructions
 
-> Read by the headless review `/loops:land` runs on a diff (`git diff main... | claude -p --append-system-prompt "$(cat REVIEW.md)"`), by `.claude/agents/reviewer.md` during a milestone review, and by any PR review bot the team wires in. Findings never approve or block a PR on their own: a person approves through branch protection, informed by the findings (playbook lesson 10).
+> Read by the review `/loops:land` runs on a story's diff through the `reviewer` subagent (a fresh context with Read, Grep and Glob, no API key), by `.claude/agents/reviewer.md` during a milestone review, and by any PR review bot the team wires in. Findings never approve or block a PR on their own: a person approves through branch protection, informed by the findings (playbook lesson 10).
 
 <!-- LOOPS:BEGIN passes (harness-owned block — /loops:update may replace it) -->
 ## Passes
@@ -35,7 +35,7 @@ Report at most five nits per review; summarise the rest as a count.
 ## Output shape
 
 ```
-## Review (headless) — <branch> vs main
+## Review (subagent) — <branch> vs main
 Important: <n> · Nits: <n> (showing 5)
 - [bugs] PLAUSIBLE · path/to/file.ts:147 — <what, trigger> → <recommendation>
 - [security] …
@@ -47,4 +47,4 @@ Strengths worth keeping: <up to three lines>
 
 ## Monthly tuning (optional, for a team)
 
-Once a month, rate the findings of the past month (useful / noise) and adjust the passes, the Important definition and the nit cap above. A finding flagged for the second time on the same mistake goes into `AGENTS.md` "Things the agent gets wrong" or into a skill, so the next session does not repeat it.
+Once a month, rate the findings of the past month (useful / noise) and adjust the passes, the Important definition and the nit cap above. They sit inside the harness block `passes`: a tuned line is a local edit, and `/loops:update` merges it three-way with upstream's changes (a conflict only where upstream changed the same line). A finding flagged for the second time on the same mistake goes into `AGENTS.md` "Things the agent gets wrong" or into a skill, so the next session does not repeat it.

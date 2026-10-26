@@ -570,10 +570,12 @@ if (existsSync('docs/TEST_MATRIX.md') && existsSync(STORY_DIR)) {
     const drift = [];
     for (const [p, rec] of Object.entries(manifest.files)) {
       if (manifest.frozen.includes(p) || !existsSync(p)) continue;
-      if (rec.kind === 'managed' && sha256(read(p)) !== rec.sha256) drift.push(p);
+      // Compared as LF, the way loops-update stores and hashes the base: a CRLF checkout is not a fork.
+      const lf = (f) => read(f).replace(/\r\n/g, '\n');
+      if (rec.kind === 'managed' && sha256(lf(p)) !== rec.sha256) drift.push(p);
       if (rec.kind === 'mixed' && existsSync(`${BASE_DIR}/${p}`)) {
-        const lo = blocksOf(read(p));
-        for (const [name, b] of blocksOf(read(`${BASE_DIR}/${p}`))) if (lo.get(name)?.body !== b.body) drift.push(`${p} (block ${name})`);
+        const lo = blocksOf(lf(p));
+        for (const [name, b] of blocksOf(lf(`${BASE_DIR}/${p}`))) if (lo.get(name)?.body !== b.body) drift.push(`${p} (block ${name})`);
       }
     }
     if (drift.length)

@@ -3,15 +3,15 @@ id: ST-016
 title: stage-guard applies only on a story branch; /loops:start says when the claim becomes visible
 trace: ADR-0004, ADR-0007 · docs/reviews/2026-10-26-v0.2-review.md F4 F7
 class: high-risk
-status: draft
+status: done
 depends_on: [ST-015]
 consumes: []
 owns: [template/.claude/hooks/stage-guard.mjs, test/hooks.mjs, skills/start/SKILL.md, CHANGELOG.md, .claude-plugin/plugin.json, docs/LOOP.md, .loops/**]
 opens: []
 adrs: [ADR-0004, ADR-0007]
 proof:
-  - T-HOOK-9 | unit | stage-guard allows git add -A on main and outside any repo, and blocks it on a story/ST-xxx branch | ☐
-  - T-SKL-13 | manual | skills/start/SKILL.md says the claim is visible to other clones once the start commit is pushed, not when the empty branch is pushed | ☐
+  - T-HOOK-9 | unit | stage-guard allows git add -A on main and outside any repo, and blocks it on a story/ST-xxx branch | ✅
+  - T-SKL-13 | manual | skills/start/SKILL.md says the claim is visible to other clones once the start commit is pushed, not when the empty branch is pushed | ✅
 ---
 
 # Story Packet: ST-016 — stage-guard on story branches only

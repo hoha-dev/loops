@@ -50,7 +50,7 @@ node scripts/loops-check.mjs                  # must print "loops-check: OK"
 | 5 | `/loops:wave` | the stories that can run now, one start prompt each | disjoint `owns`, computed |
 | 6 | `/loops:start ST-001` | a worktree under `.worktrees/` on branch `story/ST-001`, plan-mode reading, a working contract | hooks `owns-guard`, `stage-guard`, `generated-guard`, `adr-guard` are active |
 | 7 | implement; set `LOOPS_FIX_TASK=1` for a bug fix | the diff, tests whose names carry the `T-…` ids | `fix-guard` blocks edits to test files during the fix |
-| 8 | `/loops:land ST-001` | proof ✅, tables regenerated, a headless review per `REVIEW.md`, a PR description with the evidence | verification with build cache off; a person approves |
+| 8 | `/loops:land ST-001` | proof ✅, tables regenerated, a review per `REVIEW.md` by the `reviewer` subagent, a PR description with the evidence | verification with build cache off; a person approves |
 | 9 | `bash evals/run.sh` after changing a skill, hook or `CLAUDE.md` | `evals/last-run.md` with pass rate and cost | — |
 | 10 | `/loops:review` at a milestone; `/loops:next` any time | a snapshot in `docs/reviews/` that is never edited afterwards; one recommended next task or a new intent | every finding ends as fixed, owned by a story, or rejected by a person |
 
@@ -66,7 +66,7 @@ Full walkthrough with commands per stage: [`docs/WORKFLOW.md`](docs/WORKFLOW.md)
 | `/loops:next` | Build / Maintain | compare the backlog with the code, read `loops-check`'s notes, recommend one task |
 | `/loops:wave` | Build | the Ready stories that can run in parallel, one self-contained start prompt each |
 | `/loops:start` | Build | one story, one worktree, plan mode, a working contract, hooks on |
-| `/loops:land` | Test / Deploy | verification with cache off, proof ✅, regenerate tables, stage only the story's `owns`, headless review, PR evidence |
+| `/loops:land` | Test / Deploy | verification with cache off, proof ✅, regenerate tables, stage only the story's `owns`, subagent review, PR evidence |
 | `/loops:review` | Maintain | milestone cross-review of the docs chain and of the code that enforces each ADR (starting from its `Enforced by` line) |
 | `/loops:encode` | Maintain | turn one boundary into the smallest check the repo runs, with a passing and a failing case, and record it on the ADR |
 | `/loops:init` | — | set up a repo from `template/`: scan, list invariants vs existing checks, interview, generate, record the installed base in `.loops/` |

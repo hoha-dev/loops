@@ -174,6 +174,49 @@ test('T-HOOK-6 every hook: empty or malformed stdin never blocks (no JSON deny),
   }
 });
 
+test('T-HOOK-9 stage-guard: git add -A is allowed on main and outside any repo, blocked on a story branch', () => {
+  const onMain = repo('stage-main', { branch: null });
+  const r1 = hook('stage-guard', onMain, bash('git add -A'));
+  expect(r1.code === 0 && !denied(r1), 'expected no block on main', r1);
+  const outside = mkdtempSync(join(tmpdir(), 'loops-nogit-'));
+  const r2 = hook('stage-guard', outside, bash('git add -A && git commit -am x'));
+  expect(r2.code === 0 && !denied(r2), 'expected no block outside any repo', r2);
+  const onStory = repo('stage-story');
+  const r3 = hook('stage-guard', onStory, bash('git add -A'));
+  expect(r3.code === 0 && denied(r3), 'expected a block on a story branch', r3);
+});
+
+test('T-HOOK-10 stage-guard: judged by the directory the command targets and through a rebase', () => {
+  const d = repo('stage-target', { branch: null });
+  git(d, 'worktree', 'add', '-q', '.worktrees/st-019', '-b', 'story/ST-019-x');
+  for (const c of ['git -C .worktrees/st-019 add -A', 'cd .worktrees/st-019 && git add -A', 'cd ".worktrees/st-019"; git commit -am x']) {
+    const r = hook('stage-guard', d, bash(c));
+    expect(r.code === 0 && denied(r), `expected a block from main for: ${c}`, r);
+  }
+  const plain = hook('stage-guard', d, bash('git add -A'));
+  expect(!denied(plain), 'expected main itself still unguarded', plain);
+  // A rebase on a story branch detaches HEAD; the branch is in rebase-merge/head-name.
+  const s = repo('stage-rebase');
+  const sha = git(s, 'rev-parse', 'HEAD').trim();
+  writeFileSync(join(s, '.git/HEAD'), `${sha}\n`);
+  mkdirSync(join(s, '.git/rebase-merge'), { recursive: true });
+  writeFileSync(join(s, '.git/rebase-merge/head-name'), 'refs/heads/story/ST-019-x\n');
+  const r = hook('stage-guard', s, bash('git add -A'));
+  expect(r.code === 0 && denied(r), 'expected a block while a story branch is being rebased', r);
+});
+
+test('T-HOOK-10b stage-guard: cd on its own line, chained cds, quoted paths with spaces, an unknown target near a story worktree', () => {
+  const d = repo('stage-target2', { branch: null });
+  git(d, 'worktree', 'add', '-q', '.worktrees/st 019', '-b', 'story/ST-019-y');
+  for (const c of ['cd ".worktrees/st 019"\ngit add -A', '  cd .worktrees && cd "st 019" && git add -A', 'git -C ".worktrees/st 019" add -A', 'cd "$WT" && git add -A']) {
+    const r = hook('stage-guard', d, bash(c));
+    expect(r.code === 0 && denied(r), `expected a block from main for: ${JSON.stringify(c)}`, r);
+  }
+  const lone = repo('stage-target3', { branch: null });
+  const r = hook('stage-guard', lone, bash('cd "$TMPDIR/x" && git add -A'));
+  expect(!denied(r), 'expected an unknown target to pass in a repo with no story worktree', r);
+});
+
 const only = process.argv[2];
 let failed = 0;
 for (const c of cases) {

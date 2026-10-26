@@ -31,10 +31,10 @@
 | [ST-013](ST-013-boundary-lines-and-executable-hook.md) | loops-check 5b reads only boundary lines, item 9 sees a non-executable .githooks hook, init names one template | ADR-0006 points 1 and 3 | 🔴 | ✅ |  |  |
 | [ST-014](ST-014-init-localizes-foundation-checklist.md) | /loops:init rewrites the foundation checklist from the repo's SAD and ADRs | ADR-0002 (template is payload) · found installing loops into a consumer repo | 🟡 | ✅ | ST-013 |  |
 | [ST-015](ST-015-update-loses-no-upstream-change.md) | loops-update never drops an upstream change — every conflicting block staged, base-less files shown as conflicts, REVIEW.md carries a block | ADR-0005 points 1-3 · docs/reviews/2026-10-26-v0.2-review.md F1 F2 F3 F8 | 🔴 | ✅ |  |  |
-| [ST-016](ST-016-stage-guard-story-scoped.md) | stage-guard applies only on a story branch; /loops:start says when the claim becomes visible | ADR-0004, ADR-0007 · docs/reviews/2026-10-26-v0.2-review.md F4 F7 | 🔴 | ☐ | ST-015 |  |
+| [ST-016](ST-016-stage-guard-story-scoped.md) | stage-guard applies only on a story branch; /loops:start says when the claim becomes visible | ADR-0004, ADR-0007 · docs/reviews/2026-10-26-v0.2-review.md F4 F7 | 🔴 | ✅ | ST-015 |  |
 | [ST-017](ST-017-run-the-eval-suite.md) | Run the eval suite once and attest the manual skill proofs by a run | SPEC-002 · docs/reviews/2026-10-06-v0.1-self-review.md F5 · docs/reviews/2026-10-26-v0.2-review.md F5 | 🟡 | ☐ |  | OPEN-004 still open |
 | [ST-018](ST-018-tests-never-touch-the-real-repo.md) | Fixture tests never write to the real repo, even when pre-push runs from a linked worktree | AGENTS.md "Common commands" (pre-push runs the full set) · incident 2026-10-26 during /loops:start ST-015 | 🟡 | ✅ |  |  |
-| [ST-019](ST-019-finish-v0-2.md) | loops 0.2.7 — update and init without dead ends, stage-guard on story branches, the land review by a subagent | independent review of ST-015 (PR #2, 2026-10-26) · docs/reviews/2026-10-26-v0.2-review.md F4 F7 · ST-016 | 🔴 | ☐ |  |  |
+| [ST-019](ST-019-finish-v0-2.md) | loops 0.2.7 — update and init without dead ends, stage-guard on story branches, the land review by a subagent | independent review of ST-015 (PR #2, 2026-10-26) · docs/reviews/2026-10-26-v0.2-review.md F4 F7 · ST-016 | 🔴 | ✅ |  |  |
 <!-- LOOPS:GEN-END backlog -->
 
 ## Template

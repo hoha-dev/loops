@@ -3,6 +3,7 @@
 // three-way merge over the base recorded at install time (ADR-0005). Plain node + git, no jq.
 //
 //   node scripts/loops-update.mjs init     --plugin <dir>   record .loops/manifest.json + .loops/base/ (run by /loops:init)
+//   node scripts/loops-update.mjs init --migrate --plugin <dir>   same for a repo installed before v0.2: no base for a differing file
 //   node scripts/loops-update.mjs status  [--plugin <dir>]  installed version, drift of managed files, pending staging
 //   node scripts/loops-update.mjs apply    --plugin <dir>   merge every managed file / mixed block; conflicts are staged, exit 2
 //   node scripts/loops-update.mjs --continue                apply the resolved staging directory
@@ -56,7 +57,11 @@ export function readManifest(root = '.') {
 const writeManifest = (root, m) => writeFile(join(root, MANIFEST), `${JSON.stringify(m, null, 2)}\n`);
 
 // --- marker blocks of a mixed file -----------------------------------------------------------------
-const BLOCK_RE = /<!-- LOOPS:BEGIN ([\w-]+)[^>]*-->\n([\s\S]*?)<!-- LOOPS:END \1 -->/g;
+const BLOCK_RE = /<!-- LOOPS:BEGIN ([\w-]+)[^>]*-->\r?\n([\s\S]*?)<!-- LOOPS:END \1 -->/g;
+
+// Merges and comparisons run on LF text; a file checked out with CRLF (core.autocrlf) gets CRLF back.
+const toLF = (t) => t.replace(/\r\n/g, '\n');
+const eolLike = (sample, text) => (sample.includes('\r\n') ? toLF(text).replace(/\n/g, '\r\n') : text);
 export function blocksOf(text) {
   const out = new Map();
   for (const m of text.matchAll(BLOCK_RE)) out.set(m[1], { start: m.index, end: m.index + m[0].length, body: m[2], whole: m[0] });
@@ -88,6 +93,12 @@ const newSlots = (merged, local) => /\{\{[A-Z_0-9]+\}\}/.test(merged) && !/\{\{[
 const whyConflict = (r) => (r.conflicts ? `${r.conflicts} conflicting region(s)` : `upstream adds a slot to fill: ${[...new Set(r.text.match(/\{\{[A-Z_0-9]+\}\}/g))].join(', ')}`);
 
 const NO_BASE = 'no stored base: the repo\'s whole text is shown against upstream';
+// With no base, git merge-file would read an upstream equal to the empty base as "unchanged" and keep the
+// local side; the whole local text is therefore set against the whole upstream text by hand.
+const withNL = (t) => (t === '' || t.endsWith('\n') ? t : `${t}\n`);
+const wholeConflict = (local, upstream) => ({ text: `<<<<<<< local\n${withNL(local)}||||||| base\n=======\n${withNL(upstream)}>>>>>>> upstream\n`, conflicts: 1 });
+const mergeOrWhole = (local, base, upstream) => (base === null && local !== upstream ? wholeConflict(local, upstream) : merge3(local, base ?? '', upstream));
+const missingBlockHelp = (plugin, path, name) => `block "${name}" has no LOOPS:BEGIN/END markers in the repo's file — copy the block from ${join(plugin.template, path)} into the same position, commit, then re-run apply`;
 
 // One file's plan, as a list of items { path, kind, action: unchanged|update|create|conflict|missing-block,
 // block?, text, reason }. A mixed file yields one conflict item per conflicting block, plus one update item
@@ -98,17 +109,18 @@ function planFile(root, plugin, entry) {
   const localPath = join(root, path);
   const basePath = join(root, BASE_DIR, path);
   if (!existsSync(upstreamPath)) return [{ path, kind, action: 'unchanged', reason: 'not in the plugin template' }];
-  const upstream = read(upstreamPath);
+  const upstream = toLF(read(upstreamPath));
   if (!existsSync(localPath)) return [{ path, kind, action: 'create', text: upstream, reason: 'new in this version' }];
-  const local = read(localPath);
-  // Without a base nothing tells a local edit from an old upstream text, so an empty base makes every
-  // difference from upstream a conflict instead of letting the merge keep the local side unseen.
-  const base = existsSync(basePath) ? read(basePath) : null;
+  const raw = read(localPath);
+  const local = toLF(raw);
+  // Without a base nothing tells a local edit from an old upstream text, so every difference from
+  // upstream is a conflict instead of a merge that keeps the local side unseen.
+  const base = existsSync(basePath) ? toLF(read(basePath)) : null;
   if (kind === 'managed') {
-    const r = merge3(local, base ?? '', upstream);
+    const r = mergeOrWhole(local, base, upstream);
     if (r.conflicts || newSlots(r.text, local))
       return [{ path, kind, action: 'conflict', text: r.text, local, base: base ?? '', upstream, reason: base === null ? NO_BASE : whyConflict(r) }];
-    return [{ path, kind, action: r.text === local ? 'unchanged' : 'update', text: r.text, reason: r.text === local ? '' : 'upstream change merged' }];
+    return [{ path, kind, action: r.text === local ? 'unchanged' : 'update', text: eolLike(raw, r.text), reason: r.text === local ? '' : 'upstream change merged' }];
   }
   // mixed: every block of the upstream template, merged on its own; bytes outside the markers untouched
   const up = blocksOf(upstream);
@@ -119,16 +131,16 @@ function planFile(root, plugin, entry) {
   const held = [];
   for (const [name, u] of up) {
     const l = lo.get(name);
-    if (!l) { held.push({ path, kind, action: 'missing-block', block: name, text: u.whole, reason: `block "${name}" has no LOOPS:BEGIN/END markers in the repo's file — insert the block by hand at its canonical position, then re-run` }); continue; }
-    const b = ba.get(name)?.body ?? '';
-    const r = merge3(l.body, b, u.body);
+    if (!l) { held.push({ path, kind, action: 'missing-block', block: name, text: u.whole, reason: missingBlockHelp(plugin, path, name) }); continue; }
+    const b = ba.has(name) ? ba.get(name).body : null;
+    const r = mergeOrWhole(l.body, b, u.body);
     if (r.conflicts || newSlots(r.text, l.body)) {
-      held.push({ path, kind, action: 'conflict', block: name, text: r.text, local: l.body, base: b, upstream: u.body, reason: `block "${name}": ${base === null ? NO_BASE : whyConflict(r)}` });
+      held.push({ path, kind, action: 'conflict', block: name, text: r.text, local: l.body, base: b ?? '', upstream: u.body, reason: `block "${name}": ${b === null ? NO_BASE : whyConflict(r)}` });
       continue;
     }
     if (r.text !== l.body) { text = replaceBlockBody(text, name, r.text); reasons.push(`block "${name}" merged`); }
   }
-  const clean = { path, kind, action: text === local ? 'unchanged' : 'update', text, reason: reasons.join(', ') };
+  const clean = { path, kind, action: text === local ? 'unchanged' : 'update', text: eolLike(raw, text), reason: reasons.join(', ') };
   return held.length ? (clean.action === 'update' ? [...held, clean] : held) : [clean];
 }
 
@@ -146,33 +158,36 @@ export function plan(root, plugin) {
 }
 
 // Write the merged results, the new base and the manifest in one pass (every merge already succeeded).
-// Paths in `noBase` get no base and no manifest entry, so the next apply stages them against upstream.
-function commitPlan(root, plugin, items, manifest, noBase = new Set()) {
+// Paths in `noBase` get no base and no manifest entry, so the next apply stages them against upstream;
+// paths in `keep` keep the base and manifest entry they already have.
+function commitPlan(root, plugin, items, manifest, { noBase = new Set(), keep = new Set(), version = plugin.version, installed = new Date().toISOString().slice(0, 10) } = {}) {
   for (const it of items) {
     if (it.action === 'update' || it.action === 'create') writeFile(join(root, it.path), it.text);
   }
   const files = {};
   for (const e of plugin.files) {
     if (e.kind === 'seeded' || noBase.has(e.path)) continue;
+    if (keep.has(e.path)) { files[e.path] = { kind: e.kind, sha256: sha256(toLF(read(join(root, BASE_DIR, e.path)))) }; continue; }
     const src = join(plugin.template, e.path);
     if (!existsSync(src)) continue;
-    const text = read(src);
+    // Stored and hashed as LF, so a plugin or repo checked out with CRLF compares equal (status, loops-check 14).
+    const text = toLF(read(src));
     writeFile(join(root, BASE_DIR, e.path), text);
     files[e.path] = { kind: e.kind, sha256: sha256(text) };
   }
-  writeManifest(root, { version: plugin.version, installed: new Date().toISOString().slice(0, 10), frozen: manifest.frozen, files });
+  writeManifest(root, { version, installed, frozen: manifest.frozen, files });
 }
 
-// A repo's file already differs from the template it is being initialised against: the text it was
-// installed from is unknown, so recording this template as its base would make every later merge keep
-// the repo's side silently. Mixed files are compared by their LOOPS blocks only.
+// For `init --migrate` (a repo installed before v0.2): a file that already differs from the template was
+// installed from an unknown text, so recording this template as its base would make every later merge
+// keep the repo's side silently. Mixed files are compared by their LOOPS blocks only.
 function differsFromTemplate(root, plugin, e) {
   const lp = join(root, e.path);
   const up = join(plugin.template, e.path);
   if (!existsSync(lp) || !existsSync(up)) return false;
-  if (e.kind === 'managed') return read(lp) !== read(up);
-  const lo = blocksOf(read(lp));
-  return [...blocksOf(read(up))].some(([name, b]) => lo.get(name)?.body !== b.body);
+  if (e.kind === 'managed') return toLF(read(lp)) !== toLF(read(up));
+  const lo = blocksOf(toLF(read(lp)));
+  return [...blocksOf(toLF(read(up)))].some(([name, b]) => lo.get(name)?.body !== b.body);
 }
 
 function dirtyManaged(root, paths) {
@@ -183,10 +198,18 @@ function dirtyManaged(root, paths) {
 }
 
 // --- commands --------------------------------------------------------------------------------------
-export function cmdInit(root, plugin) {
+// A fresh install (/loops:init) records the template it copied as the base of every file, including a
+// file it merged into, such as an existing .claude/settings.json. A re-run keeps every base already
+// stored. `--migrate` is for a repo installed before v0.2, see differsFromTemplate.
+export function cmdInit(root, plugin, { migrate = false } = {}) {
   const m = readManifest(root);
-  const noBase = new Set(plugin.files.filter((e) => e.kind !== 'seeded' && differsFromTemplate(root, plugin, e)).map((e) => e.path));
-  commitPlan(root, plugin, [], m ?? { frozen: [] }, noBase);
+  const keep = new Set(Object.keys(m?.files ?? {}).filter((p) => existsSync(join(root, BASE_DIR, p))));
+  // On a re-run, a path without a stored base was installed from an unknown text too, so it follows the
+  // --migrate rule; giving it this template as base would make the next apply keep the repo's side unseen.
+  const noBase = new Set(migrate || m ? plugin.files.filter((e) => e.kind !== 'seeded' && !keep.has(e.path) && differsFromTemplate(root, plugin, e)).map((e) => e.path) : []);
+  // A re-run records new files only; the version stays the installed one until apply merges the files.
+  commitPlan(root, plugin, [], m ?? { files: {}, frozen: [] }, { noBase, keep, ...(m ? { version: m.version, installed: m.installed } : {}) });
+  if (keep.size) console.log(`loops-update: kept the stored base of ${keep.size} file(s) already in ${MANIFEST}`);
   if (noBase.size) console.log(`loops-update: no base recorded for ${noBase.size} file(s) that differ from this template; the next apply stages them against upstream: ${[...noBase].join(', ')}`);
   const gi = join(root, '.gitignore');
   // .worktrees/ holds story worktrees (/loops:start); loops-check item 16 fails when it is not ignored.
@@ -196,7 +219,8 @@ export function cmdInit(root, plugin) {
     cur = `${cur}${cur && !cur.endsWith('\n') ? '\n' : ''}${line}\n`;
   }
   writeFileSync(gi, cur);
-  console.log(`loops-update: recorded base for ${Object.keys(readManifest(root).files).length} file(s) at version ${plugin.version} in ${MANIFEST}`);
+  const written = readManifest(root);
+  console.log(`loops-update: recorded base for ${Object.keys(written.files).length} file(s) in ${MANIFEST} (installed version ${written.version})`);
   return 0;
 }
 
@@ -205,7 +229,7 @@ export function cmdStatus(root, plugin) {
   if (!m) { console.log(`loops-update: no ${MANIFEST} — run "loops-update init --plugin <dir>" (or /loops:init)`); return 1; }
   const lines = [];
   const staged = existsSync(join(root, STAGE_DIR));
-  const noBase = plugin ? plugin.files.filter((e) => e.kind !== 'seeded' && !m.frozen.includes(e.path) && !m.files[e.path] && existsSync(join(root, e.path))).map((e) => e.path) : [];
+  const noBase = plugin ? plugin.files.filter((e) => e.kind !== 'seeded' && !m.frozen.includes(e.path) && !m.files[e.path] && existsSync(join(root, e.path)) && existsSync(join(plugin.template, e.path))).map((e) => e.path) : [];
   const verdict = !plugin ? '' : plugin.version !== m.version ? 'update available'
     : staged ? 'update staged, not applied' : noBase.length ? `${noBase.length} file(s) without a base — run apply` : 'current';
   lines.push(`installed: ${m.version}${plugin ? `  plugin: ${plugin.version}  → ${verdict}` : ''}`);
@@ -214,11 +238,11 @@ export function cmdStatus(root, plugin) {
     if (m.frozen.includes(p)) continue;
     const lp = join(root, p);
     if (!existsSync(lp)) { drift.push(`${p} (missing)`); continue; }
-    if (rec.kind === 'managed' && sha256(read(lp)) !== rec.sha256) drift.push(p);
+    if (rec.kind === 'managed' && sha256(toLF(read(lp))) !== rec.sha256) drift.push(p);
     if (rec.kind === 'mixed') {
       const bp = join(root, BASE_DIR, p);
       if (!existsSync(bp)) continue;
-      const lo = blocksOf(read(lp)); const ba = blocksOf(read(bp));
+      const lo = blocksOf(toLF(read(lp))); const ba = blocksOf(toLF(read(bp)));
       for (const [name, b] of ba) if (lo.get(name)?.body !== b.body) drift.push(`${p} (block ${name})`);
     }
   }
@@ -235,19 +259,24 @@ export function cmdApply(root, plugin) {
   const touched = items.filter((i) => ['update', 'conflict', 'missing-block'].includes(i.action)).map((i) => i.path);
   const dirty = dirtyManaged(root, touched);
   if (dirty.length) { console.error(`loops-update: uncommitted changes in ${dirty.join(', ')} — commit or stash them first (git is the backup for this update)`); return 1; }
-  const conflicts = items.filter((i) => i.action === 'conflict' || i.action === 'missing-block');
   for (const it of items) console.log(`loops-update: ${it.action.padEnd(14)} ${it.path}${it.reason ? `  — ${it.reason}` : ''}`);
+  // A missing block cannot be resolved inside the staging directory: --continue writes blocks into the
+  // markers of the live file, and adding the markers to the live file is a change since staging.
+  const missing = items.filter((i) => i.action === 'missing-block');
+  if (missing.length) {
+    console.error(`loops-update: ${missing.length} block(s) without markers — nothing staged, nothing written. Add the markers as named above, commit, then re-run apply.`);
+    return 1;
+  }
+  const conflicts = items.filter((i) => i.action === 'conflict');
   if (conflicts.length) {
     const stage = join(root, STAGE_DIR);
     for (const d of STAGE_SUBDIRS) mkdirSync(join(stage, d), { recursive: true });
     const state = { version: plugin.version, plugin: plugin.root, staged: {} };
     for (const it of conflicts) {
       const name = it.block ? `${it.path}#${it.block}` : it.path;
-      if (it.action === 'conflict') {
-        writeFile(join(stage, 'base', name), it.base);
-        writeFile(join(stage, 'local', name), it.local);
-        writeFile(join(stage, 'incoming', name), it.upstream);
-      } else writeFile(join(stage, 'incoming', name), it.text);
+      writeFile(join(stage, 'base', name), it.base);
+      writeFile(join(stage, 'local', name), it.local);
+      writeFile(join(stage, 'incoming', name), it.upstream);
       writeFile(join(stage, 'resolved', name), it.text);
       state.staged[name] = { path: it.path, block: it.block ?? null, action: it.action, localSha: sha256(read(join(root, it.path))) };
     }
@@ -298,11 +327,12 @@ export function cmdContinue(root) {
     const resolved = read(join(stage, 'resolved', name));
     if (hasMarkers(resolved)) { problems.push(`${name} still has conflict markers`); continue; }
     if (/\{\{[A-Z_0-9]+\}\}/.test(resolved) && !(existsSync(live) && /\{\{[A-Z_0-9]+\}\}/.test(read(live)))) { problems.push(`${name} still has an unfilled {{slot}}`); continue; }
+    const liveText = existsSync(live) ? read(live) : '';
     if (rec.block) {
-      const t = replaceBlockBody(texts.get(rec.path) ?? read(live), rec.block, resolved);
-      if (t === null) { problems.push(`${rec.path}: block ${rec.block} markers missing in the live file — insert the markers, then re-run --continue`); continue; }
-      texts.set(rec.path, t);
-    } else texts.set(rec.path, resolved);
+      const t = replaceBlockBody(toLF(texts.get(rec.path) ?? liveText), rec.block, toLF(resolved));
+      if (t === null) { problems.push(`${rec.path}: block ${rec.block} markers missing in the live file — run --abort, add the markers, commit, then re-run apply`); continue; }
+      texts.set(rec.path, eolLike(liveText, t));
+    } else texts.set(rec.path, eolLike(liveText, resolved));
   }
   if (problems.length) { for (const p of problems) console.error(`loops-update: ✗ ${p}`); return 1; }
   const byPath = new Map([...texts].map(([path, text]) => [path, { path, text }]));
@@ -332,7 +362,7 @@ if (isMain) {
   const root = process.cwd();
   try {
     let code = 1;
-    if (cmd === 'init') code = cmdInit(root, readPlugin(pluginDir));
+    if (cmd === 'init') code = cmdInit(root, readPlugin(pluginDir), { migrate: args.includes('--migrate') });
     else if (cmd === 'status') code = cmdStatus(root, pluginDir ? readPlugin(pluginDir) : null);
     else if (cmd === 'apply') code = cmdApply(root, readPlugin(pluginDir));
     else if (cmd === '--continue') code = cmdContinue(root);

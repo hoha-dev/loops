@@ -27,7 +27,7 @@ Otherwise **stop and report** the exact blocker (the column text is the answer):
 node scripts/loops-gen.mjs --claims --fetch                                  # another developer may have claimed it since the wave was computed
 git check-ignore -q .worktrees/x || echo ".worktrees/" >> .gitignore        # commit that line on main first if it was missing
 git worktree add .worktrees/<st-id-lowercase> -b story/<ST-ID> origin/main   # e.g. .worktrees/st-019 story/ST-019; no remote → base on main
-git -C .worktrees/<st-id-lowercase> push -u origin story/<ST-ID>             # the claim exists for other clones only once it is on the remote (ADR-0007)
+git -C .worktrees/<st-id-lowercase> push -u origin story/<ST-ID>             # on the remote, not yet a claim (Step 3); rejected → someone else started it: back to /loops:wave (ADR-0007)
 ```
 
 Worktrees live inside the repo at `.worktrees/`, never in a sibling directory: a sibling outlives `git worktree remove` (ignored `node_modules` stay behind) where nobody looks, and `loops-check` notes any worktree outside `.worktrees/` and fails when `.worktrees/` is not git-ignored.
@@ -36,7 +36,7 @@ If `--claims` now lists this story under a branch that is not yours, stop: someo
 
 ## Step 3 — Flip status and record the claim
 
-In the story file: `status: in-progress`. Regenerate the tables, run the check (an overlap with another in-progress story fails here — that is the check doing its job; go back to /loops:wave). Commit this one change on the story branch: `docs(ST-xxx): start`, and push it. Other checkouts do not see the status commit as a status; what they see is the unmerged `story/ST-xxx` branch, which `loops-check` and `loops-gen --claims` read from the refs every worktree shares and a fetch brings from the remote.
+In the story file: `status: in-progress`. Regenerate the tables, run the check (an overlap with another in-progress story fails here — that is the check doing its job; go back to /loops:wave). Commit this one change on the story branch: `docs(ST-xxx): start`, and push it. This push is what makes the claim: until then the branch points at main's commit, and `loops-gen --claims` reads a branch with nothing beyond main as merged, not as claimed. If the push is rejected as non-fast-forward, another developer started the same story first: stop and go back to `/loops:wave`. Other checkouts do not see the status commit as a status; what they see is the unmerged `story/ST-xxx` branch, which `loops-check` and `loops-gen --claims` read from the refs every worktree shares and a fetch brings from the remote.
 
 ## Step 4 — Load only what the front matter names, in plan mode
 
