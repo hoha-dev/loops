@@ -6,6 +6,7 @@ import './git-env.mjs';
 import { cpSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
@@ -192,7 +193,7 @@ test('T-UPD-10 a managed file with no stored base that differs from upstream is 
   expect(!/UPSTREAM-LINE/.test(rd(join(d, MANAGED))), 'expected the live file untouched');
 });
 
-test('T-UPD-11 init over existing files records a base only for files equal to the template; apply then stages every other differing file', () => {
+test('T-UPD-11 init --migrate over existing files records a base only for files equal to the template; apply then stages every other differing file', () => {
   const p1 = plugin('p11a', '0.1.0');
   const d = join(WORK, 'r11'); cpSync(join(p1, 'template'), d, { recursive: true });
   const G = 'docs/templates/review.md';
@@ -202,7 +203,7 @@ test('T-UPD-11 init over existing files records a base only for files equal to t
   const p2 = plugin('p11b', '0.2.0');
   wr(join(p2, 'template', MANAGED), `${rd(join(p2, 'template', MANAGED))}\nUPSTREAM-RUNBOOK\n`);
   wr(join(p2, 'template', G), `${rd(join(p2, 'template', G))}\nUPSTREAM-REVIEW\n`);
-  expect(sh(d, ['init', '--plugin', p2]).code === 0, 'expected init to succeed');
+  expect(sh(d, ['init', '--migrate', '--plugin', p2]).code === 0, 'expected init to succeed');
   expect(!existsSync(join(d, '.loops/base', MANAGED)) && !existsSync(join(d, '.loops/base', G)), 'expected no base for files that differ from the template');
   expect(existsSync(join(d, '.loops/base/docs/templates/spec.md')), 'expected a base for a file equal to the template');
   const s0 = sh(d, ['status', '--plugin', p2]);
@@ -225,6 +226,82 @@ test('T-UPD-13 apply with no managed file to touch succeeds while an unrelated f
   const p2 = plugin('p13b', '0.2.0');
   const r = sh(d, ['apply', '--plugin', p2]);
   expect(r.code === 0 && !/uncommitted changes/.test(r.out), 'expected apply to ignore a dirty file it does not touch', r.out);
+});
+
+// A plugin whose REVIEW.md has no LOOPS markers, as every template up to 0.2.5 shipped it.
+const stripMarkers = (t) => t.replace(/<!-- LOOPS:(BEGIN|END) [\w-]+[^>]*-->\n\n?/g, '');
+
+test('T-UPD-14 a mixed file without a block\'s markers stops apply before staging, with the way out', () => {
+  const p1 = plugin('p14a', '0.2.5'); wr(join(p1, 'template/REVIEW.md'), stripMarkers(rd(join(p1, 'template/REVIEW.md'))));
+  const d = repo('r14', p1);
+  const p2 = plugin('p14b', '0.2.7');
+  const r = sh(d, ['apply', '--plugin', p2]);
+  expect(r.code === 1 && !existsSync(join(d, '.loops/update')), 'expected exit 1 and no staging directory', r.out);
+  expect(/REVIEW\.md/.test(r.out) && /block "passes"/.test(r.out) && r.out.includes(join(p2, 'template', 'REVIEW.md')) && /commit, then re-run apply/.test(r.out), 'expected the block, the template file and the way out named', r.out);
+  wr(join(d, 'REVIEW.md'), rd(join(p2, 'template/REVIEW.md'))); git(d, 'add', 'REVIEW.md'); git(d, 'commit', '-q', '-m', 'markers');
+  const r2 = sh(d, ['apply', '--plugin', p2]);
+  expect(r2.code === 0, 'expected apply to go through once the markers are committed', r2.out);
+});
+
+test('T-UPD-15 init records the template base for a file the install merged into; init --migrate does not, and says so', () => {
+  const p = plugin('p15', '0.2.7');
+  const make = (name) => {
+    const d = join(WORK, name); cpSync(join(p, 'template'), d, { recursive: true });
+    const s = JSON.parse(rd(join(d, '.claude/settings.json'))); s.permissions = { allow: ['Bash(npm test)'] }; wr(join(d, '.claude/settings.json'), `${JSON.stringify(s, null, 2)}\n`);
+    git(d, 'init', '-q', '-b', 'main'); git(d, 'config', 'user.email', 't@x'); git(d, 'config', 'user.name', 't');
+    return d;
+  };
+  const fresh = make('r15a');
+  expect(sh(fresh, ['init', '--plugin', p]).code === 0 && existsSync(join(fresh, '.loops/base/.claude/settings.json')), 'expected a base for the merged settings.json on a fresh install');
+  expect(/→ current/.test(sh(fresh, ['status', '--plugin', p]).out), 'expected status current right after a fresh install');
+  const mig = make('r15b');
+  const i = sh(mig, ['init', '--migrate', '--plugin', p]);
+  expect(i.code === 0 && !existsSync(join(mig, '.loops/base/.claude/settings.json')) && /\.claude\/settings\.json/.test(i.out), 'expected --migrate to record no base for it and name it', i.out);
+  expect(/1 file\(s\) without a base/.test(sh(mig, ['status', '--plugin', p]).out), 'expected status to count it');
+});
+
+test('T-UPD-16 re-running init keeps the stored base of a file edited since install; the next apply is a three-way merge', () => {
+  const p1 = plugin('p16a', '0.2.5'); const d = repo('r16', p1);
+  wr(join(d, MANAGED), `local first line\n${rd(join(d, MANAGED))}`); git(d, 'add', MANAGED); git(d, 'commit', '-q', '-m', 'local');
+  const p2 = plugin('p16b', '0.2.7'); wr(join(p2, 'template', MANAGED), `${rd(join(p2, 'template', MANAGED))}\nupstream last line\n`);
+  expect(sh(d, ['init', '--plugin', p2]).code === 0, 'expected init to succeed');
+  expect(rd(join(d, '.loops/base', MANAGED)) === rd(join(p1, 'template', MANAGED)), 'expected the stored base kept, not replaced by the new template');
+  const entry = JSON.parse(rd(join(d, '.loops/manifest.json'))).files[MANAGED];
+  expect(entry?.sha256 === createHash('sha256').update(rd(join(p1, 'template', MANAGED))).digest('hex'), 'expected the manifest entry to keep describing the stored base', JSON.stringify(entry));
+  git(d, 'add', '.loops'); git(d, 'commit', '-q', '-m', 'reinit');
+  const r = sh(d, ['apply', '--plugin', p2]);
+  const t = rd(join(d, MANAGED));
+  expect(r.code === 0 && t.startsWith('local first line') && /upstream last line\n$/.test(t), 'expected a clean three-way merge keeping both edits', r.out);
+});
+
+test('T-UPD-17 with no stored base, an upstream that empties the file is a conflict', () => {
+  const p1 = plugin('p17a', '0.2.5'); const d = repo('r17', p1);
+  rmSync(join(d, '.loops/base', MANAGED)); git(d, 'add', '.loops'); git(d, 'commit', '-q', '-m', 'lose base');
+  const p2 = plugin('p17b', '0.2.7'); wr(join(p2, 'template', MANAGED), '');
+  const r = sh(d, ['apply', '--plugin', p2]);
+  expect(r.code === 2 && /conflict\s+docs\/templates\/runbook\.md/.test(r.out), 'expected a conflict, not a silent keep', r.out);
+});
+
+test('T-UPD-18 a mixed file checked out with CRLF has its blocks merged and keeps CRLF', () => {
+  const p1 = plugin('p18a', '0.2.5'); const d = repo('r18', p1);
+  wr(join(d, MIXED), rd(join(d, MIXED)).replace(/\r?\n/g, '\r\n')); git(d, 'add', MIXED); git(d, 'commit', '-q', '-m', 'crlf');
+  const p2 = plugin('p18b', '0.2.7');
+  const t = rd(join(p2, 'template', MIXED));
+  const line = firstLongLine(blockBody(t, 'rituals'));
+  wr(join(p2, 'template', MIXED), t.replace(line, `${line} UPSTREAM-CRLF`));
+  const r = sh(d, ['apply', '--plugin', p2]);
+  const after = rd(join(d, MIXED));
+  expect(r.code === 0 && !/missing-block/.test(r.out) && /UPSTREAM-CRLF/.test(after), 'expected the block found and merged', r.out);
+  expect(!/[^\r]\n/.test(after), 'expected the file to stay CRLF throughout');
+});
+
+test('T-UPD-19 status does not count a manifest path the template does not ship as a file without a base', () => {
+  const p = plugin('p19', '0.2.7');
+  writeFileSync(join(p, 'loops-install-files.txt'), `${rd(join(p, 'loops-install-files.txt'))}\nmanaged  docs/ghost.md\n`);
+  const d = repo('r19', p);
+  wr(join(d, 'docs/ghost.md'), 'repo file\n');
+  const s = sh(d, ['status', '--plugin', p]);
+  expect(/→ current/.test(s.out) && !/without a base/.test(s.out), 'expected current', s.out);
 });
 
 const only = process.argv[2];

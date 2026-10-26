@@ -11,7 +11,7 @@ opens: []
 adrs: [ADR-0003]
 proof:
   - T-SKL-4 | manual | /loops:start opens the reading step in plan mode and prints the working contract with the active hooks before any edit | ✅
-  - T-SKL-5 | manual | /loops:land step 5 runs the headless review from REVIEW.md on the diff and attaches the findings to the PR description, without the findings approving or blocking anything | ✅
+  - T-SKL-5 | manual | /loops:land step 5 runs the review from REVIEW.md on the diff through the reviewer subagent and attaches the findings to the PR description, without the findings approving or blocking anything | ✅
   - T-SKL-6 | manual | /loops:review names .claude/agents/reviewer.md as the parallel reader and keeps the rule that readers do not run the gates (L27) | ✅
   - T-DOC-4 | manual | template/REVIEW.md has three passes (bugs, security, compliance with the story AC and ADRs), the Important/Nit definition, a nit cap, and excludes LOOPS:GEN blocks and what loops-check already verifies | ✅
 ---

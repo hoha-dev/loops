@@ -174,6 +174,18 @@ test('T-HOOK-6 every hook: empty or malformed stdin never blocks (no JSON deny),
   }
 });
 
+test('T-HOOK-9 stage-guard: git add -A is allowed on main and outside any repo, blocked on a story branch', () => {
+  const onMain = repo('stage-main', { branch: null });
+  const r1 = hook('stage-guard', onMain, bash('git add -A'));
+  expect(r1.code === 0 && !denied(r1), 'expected no block on main', r1);
+  const outside = mkdtempSync(join(tmpdir(), 'loops-nogit-'));
+  const r2 = hook('stage-guard', outside, bash('git add -A && git commit -am x'));
+  expect(r2.code === 0 && !denied(r2), 'expected no block outside any repo', r2);
+  const onStory = repo('stage-story');
+  const r3 = hook('stage-guard', onStory, bash('git add -A'));
+  expect(r3.code === 0 && denied(r3), 'expected a block on a story branch', r3);
+});
+
 const only = process.argv[2];
 let failed = 0;
 for (const c of cases) {

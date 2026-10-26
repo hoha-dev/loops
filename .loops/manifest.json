@@ -1,5 +1,5 @@
 {
-  "version": "0.2.6",
+  "version": "0.2.7",
   "installed": "2026-10-26",
   "frozen": [
     "scripts/loops-check.mjs",
@@ -51,7 +51,7 @@
     },
     "scripts/loops-update.mjs": {
       "kind": "managed",
-      "sha256": "0b172751b2841f5403dfef607ee8a5b11ec45f741e3112bd632a7d3b3ac806ac"
+      "sha256": "8716b94f1fc7622ce0193c638080314bfaed0b3b1fa125faf0d91551d8936203"
     },
     ".claude/settings.json": {
       "kind": "managed",
@@ -67,7 +67,7 @@
     },
     ".claude/hooks/stage-guard.mjs": {
       "kind": "managed",
-      "sha256": "53f49ff1aafc8729d7fe2f72b10f50b745f3e451c8b0f5abb8390199ea37e21e"
+      "sha256": "abf79533ed67c2743b0555c435251484f3f760d37b83bd9a8a1927ae539249a2"
     },
     ".claude/hooks/generated-guard.mjs": {
       "kind": "managed",
@@ -87,7 +87,7 @@
     },
     ".claude/agents/reviewer.md": {
       "kind": "managed",
-      "sha256": "9b631616dff5dd47825e30be58a25f95f756513b39d5232c84904b042342df12"
+      "sha256": "23177352d90bc5c9d152dadaa304435d47c495d737ecd8c1ed966da2fdabab84"
     },
     "evals/check.mjs": {
       "kind": "managed",
@@ -99,7 +99,7 @@
     },
     "REVIEW.md": {
       "kind": "mixed",
-      "sha256": "64a15640876ec30333d55bbdce4b831c2631d2e92f052d044bc07e493729b037"
+      "sha256": "bfde463dae706ca45df6bf683d783000020af3a10d16dbb50a641abbb0965cf4"
     },
     "AGENTS.md": {
       "kind": "mixed",
@@ -111,7 +111,7 @@
     },
     "docs/LOOP.md": {
       "kind": "mixed",
-      "sha256": "844c516ced9de5c745ab1cf807363da4a23ac22a95878a348cfb855ff23e3265"
+      "sha256": "c8e762b3b9f7f929c50b5d9a9506096ffb5b72aeb4b5c532707c98957403dfbe"
     }
   }
 }

@@ -52,17 +52,15 @@ Commit message references the ids: `feat(scope): what changed (ST-xxx land N, T-
 
 Before opening the PR, bring the branch up to date with `origin/main`. When another story landed first, `docs/stories/README.md` and `docs/TEST_MATRIX.md` conflict, because both branches regenerated them. Resolve the conflicts in the story files only, run `node scripts/loops-gen.mjs`, and stage the regenerated tables; never resolve a generated block by hand. `loops-check` fails while conflict markers remain.
 
-## Step 5 — Headless review per REVIEW.md, then the PR description
+## Step 5 — Review per REVIEW.md by the reviewer subagent, then the PR description
 
-Before writing the PR description, run the review the repo's `REVIEW.md` defines on the diff, in a fresh context (the headless call reads nothing of this session):
+Before writing the PR description, have the diff reviewed in a fresh context by the `reviewer` subagent (`.claude/agents/reviewer.md`: Read, Grep, Glob; it starts with none of this session's context and needs no API key):
 
 ```bash
-git diff origin/main...HEAD | claude --bare -p --append-system-prompt "$(cat REVIEW.md)" --output-format json > .loops-review.json
-node -e "const r=require('./.loops-review.json');console.log(r.result)"      # paste the result under "Review (headless)" below
+git diff origin/main...HEAD > "${TMPDIR:-/tmp}/<st-id-lowercase>.diff"      # outside the repo: never staged
 ```
 
-`--bare` needs `ANTHROPIC_API_KEY` in the environment; without a key drop `--bare` (the call then loads this machine's CLAUDE.md and hooks, and costs more — 0.698 USD for a one-word prompt was measured on 2026-10-06). The findings do **not** approve or block anything: a person approves the PR. Delete `.loops-review.json` before staging. Optionally delegate the verification run to `.claude/agents/verifier.md` for a fresh-context report and paste it under "Verification".
-
+Hand the subagent, as its whole task: the diff's path; the worktree path (its line numbers must refer to those files, so the worktree stays until the review returns); `REVIEW.md`; the story file; every ADR in `adrs`; and the Step 1 results as a given — it runs nothing (L27). Ask for the output shape in `REVIEW.md`. Then open every line it cites: a finding becomes **CONFIRMED** only once you have seen it at that line (reproduce it when it claims behaviour), stays PLAUSIBLE otherwise, and a wrong coordinate is corrected before it reaches the PR. A CONFIRMED Important finding inside `owns` is fixed before the PR, with the run repeated; one outside `owns` names the story that takes it. The findings do **not** approve or block anything: a person approves the PR. Optionally delegate the verification run to `.claude/agents/verifier.md` for a fresh-context report and paste it under "Verification".
 
 ```
 ## ST-xxx land N — <title>
@@ -72,7 +70,7 @@ Consumer edges: SetsRoute imported by apps/web/src/router.tsx; useSets used in S
 Gates added: none | theme:check — local: `pnpm -F ui test` 3/3 · hook: none · CI: declared in .gitlab-ci.yml (saw it run on this MR: yes/no) · branch protection: unverified
 Decisions recorded: ADR-0014 (why X) | none
 Out of scope, deliberately: <what was left and which story owns it>
-Review (headless, REVIEW.md): Important 0 · Nits 2 — <paste the findings; each PLAUSIBLE until a person opens the line>
+Review (reviewer subagent, REVIEW.md): Important 0 · Nits 2 — <each finding CONFIRMED (line opened, behaviour reproduced) or PLAUSIBLE, and what was fixed>
 ```
 
 Everything a future reviewer would otherwise dig out of the story body lives here, attached to the diff it describes.

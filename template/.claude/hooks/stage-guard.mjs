@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 // PreToolUse · Bash
 // `git add -A`, `git add .`, `git add --all` and `git commit -a` stage whatever is in the tree, which
-// is how a session commits another story's files (L21). Staging is by exact path in a loops repo.
-import { readInput, block, run } from './lib.mjs';
+// is how a session commits another story's files (L21). On a story branch, staging is by exact path.
+import { readInput, repoRoot, currentBranch, block, run } from './lib.mjs';
 
 await run('stage-guard', async () => {
   const input = readInput();
   // On Windows the shell tool is PowerShell (Git Bash may be absent); same command, same rule.
   if (!input || !['Bash', 'PowerShell'].includes(input.tool_name)) return;
+  // The rule is about one story's owns, so it holds on a story branch only (as owns-guard does): on main,
+  // or in a throwaway repo a command builds, there is no owns to stage by.
+  if (!/^story\/ST-\d+/.test(currentBranch(repoRoot(input)) ?? '')) return;
   const cmd = String(input.tool_input?.command ?? '');
   // Every spelling that stages the whole tree: -A, --all, -u/--update (all tracked changes), ".", "./",
   // "*" (quoted or not), ":/" (the pathspec root), also after "--" (self-review F4).

@@ -14,7 +14,7 @@ Plan ──► Design ──► Build ──► Test ──► Deploy ──► 
 | Design | `docs/specs/SPEC-nnn.md` + OPEN rows + ADRs (Proposed → Accepted) | `/loops:spec`, `/loops:sync` | human settles OPEN + ADRs; check: spec `accepted` has no open point | lessons 3, 11 |
 | Build | story packets, `story/ST-xxx` branches **pushed** (the claim other developers see), the diff | story packet by hand or from the spec; `/loops:wave`, `/loops:start` | check: Ready computed, duplicate ids fail; hooks: `owns-guard`, `stage-guard`, `generated-guard`, `adr-guard` | lessons 4–7 |
 | Test | `proof` rows ✅, test titles carrying the ids, `evals/last-run.md` | `/loops:land` step 1; `.claude/agents/verifier.md`; `evals/run.sh` | check: ✅ needs a test naming the id (note); hook: `fix-guard` during a fix | lessons 8–9 |
-| Deploy | the PR with its evidence and the headless review | `/loops:land` steps 2–5, `REVIEW.md` | human: branch protection / code owner; check: gate has an invoker, hooks wired | lessons 10–12 |
+| Deploy | the PR with its evidence and the subagent review | `/loops:land` steps 2–5, `REVIEW.md` | human: branch protection / code owner; check: gate has an invoker, hooks wired | lessons 10–12 |
 | Maintain | review snapshot in `docs/reviews/`, `loops-check` time signals | `/loops:review`, `/loops:next` | check: OPEN age, review distance, stray files → proposals, never actions | lesson 13 |
 
 ## Plan — capture the intent
@@ -71,7 +71,7 @@ Measure (lessons 8–9): first-pass CI success; eval pass rate over time and the
 ## Deploy — land, review, approve
 
 ```
-/loops:land ST-xxx     # 0-cache verification → proof ✅ → tables regenerated → stage by owns → headless review → PR
+/loops:land ST-xxx     # 0-cache verification → proof ✅ → tables regenerated → stage by owns → reviewer subagent → PR
 ```
 
 The PR description carries the evidence: the exact commands and their summary lines (with the `Cached: X/Y` line), consumer edges for every new export, the enforcement of every new gate by level (local · hook · CI declared · branch protection unverified), decisions recorded, what was left out and which story owns it, and the headless review per `REVIEW.md` (findings PLAUSIBLE until a person opens the line). Findings never approve or block; a person does, through branch protection. The CI templates in `ci/` run `loops-gen --check` and `loops-check` on every push and the evals on configuration changes, with no `continue-on-error`.
