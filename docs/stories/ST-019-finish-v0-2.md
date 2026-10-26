@@ -3,7 +3,7 @@ id: ST-019
 title: loops 0.2.7 — update and init without dead ends, stage-guard on story branches, the land review by a subagent
 trace: independent review of ST-015 (PR #2, 2026-10-26) · docs/reviews/2026-10-26-v0.2-review.md F4 F7 · ST-016
 class: high-risk
-status: ready
+status: in-progress
 depends_on: []
 consumes: []
 owns: [template/scripts/loops-update.mjs, test/update.mjs, skills/update/SKILL.md, skills/init/SKILL.md, template/REVIEW.md, REVIEW.md, template/.claude/hooks/stage-guard.mjs, test/hooks.mjs, skills/start/SKILL.md, skills/land/SKILL.md, template/.claude/agents/reviewer.md, .claude/agents/reviewer.md, template/docs/LOOP.md, docs/LOOP.md, README.md, docs/WORKFLOW.md, docs/stories/ST-005-agents-plan-mode-and-review-per-pr.md, docs/stories/ST-016-stage-guard-story-scoped.md, CHANGELOG.md, .claude-plugin/plugin.json, .loops/**]
