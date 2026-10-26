@@ -1,5 +1,5 @@
 {
-  "version": "0.2.4",
+  "version": "0.2.5",
   "installed": "2026-10-26",
   "frozen": [
     "scripts/loops-check.mjs",
